@@ -13,7 +13,6 @@ import org.apache.avro.io.BinaryEncoder
 import org.apache.avro.io.EncoderFactory
 import org.apache.avro.specific.SpecificDatumWriter
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 
 import scala.io.Source
@@ -23,6 +22,7 @@ class HopsKafkaProducer extends Runnable {
   private val logger = Logger[HopsKafkaProducer]
 
   private val config = ConfigFactory.load("hops-kafka-producer.properties")
+  private val sslConfig = ConfigFactory.load("hops-kafka-ssl.properties")
 
   private val props: Properties = {
     val p = new Properties()
@@ -33,11 +33,11 @@ class HopsKafkaProducer extends Runnable {
     p.put("retries", config.getString("retries"))
     p.put("linger.ms", config.getString("linger.ms"))
     p.put("security.protocol", config.getString("security.protocol"))
-    p.put("ssl.truststore.location", config.getString("ssl.truststore.location"))
-    p.put("ssl.truststore.password", config.getString("ssl.truststore.password"))
-    p.put("ssl.keystore.location", config.getString("ssl.keystore.location"))
-    p.put("ssl.keystore.password", config.getString("ssl.keystore.password"))
-    p.put("ssl.key.password", config.getString("ssl.key.password"))
+    p.put("ssl.truststore.location", sslConfig.getString("ssl.truststore.location"))
+    p.put("ssl.truststore.password", sslConfig.getString("ssl.truststore.password"))
+    p.put("ssl.keystore.location", sslConfig.getString("ssl.keystore.location"))
+    p.put("ssl.keystore.password", sslConfig.getString("ssl.keystore.password"))
+    p.put("ssl.key.password", sslConfig.getString("ssl.key.password"))
     p
   }
 
