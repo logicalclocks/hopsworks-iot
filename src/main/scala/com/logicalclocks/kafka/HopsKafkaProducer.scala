@@ -3,7 +3,7 @@ package com.logicalclocks.kafka
 import java.io.ByteArrayOutputStream
 import java.util.Properties
 
-import com.typesafe.config.ConfigFactory
+import com.logicalclocks.commons.PropertiesReader
 import com.typesafe.scalalogging.Logger
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
@@ -21,25 +21,10 @@ class HopsKafkaProducer extends Runnable {
 
   private val logger = Logger[HopsKafkaProducer]
 
-  private val config = ConfigFactory.load("hops-kafka-producer.properties")
-  private val sslConfig = ConfigFactory.load("hops-kafka-ssl.properties")
-
-  private val props: Properties = {
-    val p = new Properties()
-    p.put("bootstrap.servers", config.getString("bootstrap.servers"))
-    p.put("key.serializer", config.getString("key.serializer"))
-    p.put("value.serializer", config.getString("value.serializer"))
-    p.put("acks", config.getString("acks"))
-    p.put("retries", config.getString("retries"))
-    p.put("linger.ms", config.getString("linger.ms"))
-    p.put("security.protocol", config.getString("security.protocol"))
-    p.put("ssl.truststore.location", sslConfig.getString("ssl.truststore.location"))
-    p.put("ssl.truststore.password", sslConfig.getString("ssl.truststore.password"))
-    p.put("ssl.keystore.location", sslConfig.getString("ssl.keystore.location"))
-    p.put("ssl.keystore.password", sslConfig.getString("ssl.keystore.password"))
-    p.put("ssl.key.password", sslConfig.getString("ssl.key.password"))
-    p
-  }
+  private val props: Properties = PropertiesReader()
+    .addResource("hops-kafka-producer.conf", "kafka")
+    .addResource("hops-kafka-ssl.conf", "kafka")
+    .props
 
   private val producer = new KafkaProducer[String, Array[Byte]](props)
 
@@ -58,7 +43,7 @@ class HopsKafkaProducer extends Runnable {
     out.close()
 
     val serializedBytes: Array[Byte] = out.toByteArray
-    val queueMessage = new ProducerRecord[String, Array[Byte]](config.getString("topic.name"), serializedBytes)
+    val queueMessage = new ProducerRecord[String, Array[Byte]](props.getProperty("topic.name"), serializedBytes)
 
     producer.send(queueMessage)
     logger.info("Sent user to topic")
