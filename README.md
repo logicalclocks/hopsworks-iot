@@ -1,1 +1,1 @@
-# hops-iot-edge-server
+# hops-iot-gateway
