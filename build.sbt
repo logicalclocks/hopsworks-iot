@@ -4,9 +4,11 @@ version := "0.1.0-SNAPSHOT"
 organization := "com.logicalclocks"
 organizationName := "Logical Clocks AB"
 
-name := "Hops IoT Edge Server"
+name := "Hops IoT Gateway"
 
-addCommandAlias("testc", ";clear;coverage;test;coverageReport")
+addCommandAlias("testc", ";clean;coverage;test;coverageReport")
+
+lazy val akkaVersion = "2.5.21"
 
 libraryDependencies ++= Seq(
   "org.eclipse.leshan" % "leshan-server-cf" % "1.0.0-M10",
@@ -16,5 +18,7 @@ libraryDependencies ++= Seq(
   "org.apache.kafka" % "kafka-clients" % "1.1.0",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
   "ch.qos.logback" % "logback-classic" % "1.1.2",
+  "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
   "org.scalatest" %% "scalatest" % "3.0.5" % Test
 )
