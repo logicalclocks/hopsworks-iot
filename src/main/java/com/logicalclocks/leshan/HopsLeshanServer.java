@@ -21,6 +21,8 @@
  */
 package com.logicalclocks.leshan;
 
+import akka.actor.ActorRef;
+import com.logicalclocks.leshan.listeners.HopsRegistrationListener;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.CertificateMessage;
@@ -32,10 +34,14 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
+import org.eclipse.leshan.server.californium.impl.LeshanServer;
 import org.eclipse.leshan.server.demo.servlet.ClientServlet;
 import org.eclipse.leshan.server.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.demo.servlet.ObjectSpecServlet;
@@ -43,6 +49,7 @@ import org.eclipse.leshan.server.demo.servlet.SecurityServlet;
 import org.eclipse.leshan.server.impl.FileSecurityStore;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StaticModelProvider;
+import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.util.SecurityUtil;
 import org.slf4j.Logger;
@@ -52,9 +59,14 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
-public class LeshanServer {
+public class HopsLeshanServer {
+    private static final Logger logger = LoggerFactory.getLogger(HopsLeshanServer.class);
+
     private String coapsHost;
     private Integer coapsPort;
     private String coapHost;
@@ -63,7 +75,8 @@ public class LeshanServer {
     private String webAddress = "localhost";
     private Integer webPort = 8082;
 
-    private static final Logger logger = LoggerFactory.getLogger(LeshanServer.class);
+    private LeshanServer lwServer = null;
+    private ActorRef leshanActorRef;
 
     private final static String[] modelPaths = new String[]{"31024.xml",
 
@@ -92,11 +105,12 @@ public class LeshanServer {
             "Non-Access_Stratum_NAS_configuration-V1_0.xml"};
 
 
-    public LeshanServer(LeshanConfig config) {
+    public HopsLeshanServer(LeshanConfig config, ActorRef leshanActorRef) {
         this.coapHost = config.coapHost();
         this.coapPort = config.coapPort();
         this.coapsHost = config.coapsHost();
         this.coapsPort = config.coapsPort();
+        this.leshanActorRef = leshanActorRef;
     }
 
     public void createAndStartServer() throws Exception {
@@ -162,14 +176,14 @@ public class LeshanServer {
         builder.setSecurityStore(securityStore);
 
         // Create and start LWM2M server
-        org.eclipse.leshan.server.californium.impl.LeshanServer lwServer = builder.build();
+        lwServer = builder.build();
 
         // Now prepare Jetty
         InetSocketAddress jettyAddr = new InetSocketAddress(webAddress, webPort);
         Server server = new Server(jettyAddr);
         WebAppContext root = new WebAppContext();
         root.setContextPath("/");
-        root.setResourceBase(LeshanServer.class.getClassLoader().getResource("webapp").toExternalForm());
+        root.setResourceBase(HopsLeshanServer.class.getClassLoader().getResource("webapp").toExternalForm());
         root.setParentLoaderPriority(true);
         server.setHandler(root);
 
@@ -187,9 +201,45 @@ public class LeshanServer {
         ServletHolder objectSpecServletHolder = new ServletHolder(new ObjectSpecServlet(lwServer.getModelProvider()));
         root.addServlet(objectSpecServletHolder, "/api/objectspecs/*");
 
+        lwServer.getRegistrationService().addListener(new HopsRegistrationListener(leshanActorRef));
+
         // Start Jetty & Leshan
         lwServer.start();
         server.start();
         logger.info("Web server started at {}.", server.getURI());
+    }
+
+    public String askForId(Registration reg) throws Exception {
+        //TODO: Make sure MAC address is in /3/0/2 resource
+        return (String) sendRequest(reg, new ReadRequest(3, 0, 2))
+                .orElse("");
+    }
+
+    public Date askForCurrentTime(Registration reg) throws Exception{
+        return (Date) sendRequest(reg, new ReadRequest(3,0,13))
+                .orElse(Date.from(Instant.ofEpochSecond(0)));
+    }
+
+    private Optional<Object> sendRequest(Registration reg, ReadRequest request) throws Exception {
+        if (lwServer == null) {
+            throw new Exception("First initialize LWM2M server");
+        }
+
+        try {
+            ReadResponse response = lwServer.send(reg, request);
+            if (response.isSuccess()) {
+                return Optional.of((LwM2mResource) response.getContent())
+                        .map(LwM2mResource::getValue);
+            }
+            else {
+                logger.error("Failed reading response {} {}", response.getCode(), response.getErrorMessage());
+                return Optional.empty();
+            }
+
+        } catch (InterruptedException e) {
+            logger.error("Error sending request {}", e);
+            return Optional.empty();
+        }
+
     }
 }

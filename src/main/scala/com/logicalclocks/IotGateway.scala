@@ -34,7 +34,6 @@ object IotGateway extends App {
   val leshanConfig: LeshanConfig = OParser.parse(parser1, args, Config()) match {
     case Some(config) =>
       logger.info(config.toString)
-      //      new Thread(new HopsKafkaProducer).start()
       LeshanConfig(
         config.coapsHost,
         config.coapsPort,
