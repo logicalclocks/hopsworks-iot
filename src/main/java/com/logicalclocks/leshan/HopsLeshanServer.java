@@ -22,6 +22,7 @@
 package com.logicalclocks.leshan;
 
 import akka.actor.ActorRef;
+import com.logicalclocks.leshan.listeners.HopsObservationListener;
 import com.logicalclocks.leshan.listeners.HopsRegistrationListener;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
@@ -38,7 +39,9 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
+import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.impl.LeshanServer;
@@ -202,6 +205,7 @@ public class HopsLeshanServer {
         root.addServlet(objectSpecServletHolder, "/api/objectspecs/*");
 
         lwServer.getRegistrationService().addListener(new HopsRegistrationListener(leshanActorRef));
+        lwServer.getObservationService().addListener(new HopsObservationListener(leshanActorRef));
 
         // Start Jetty & Leshan
         lwServer.start();
@@ -209,15 +213,19 @@ public class HopsLeshanServer {
         logger.info("Web server started at {}.", server.getURI());
     }
 
-    public String askForId(Registration reg) throws Exception {
+    public Optional<String> askForMAC(Registration reg) throws Exception {
         //TODO: Make sure MAC address is in /3/0/2 resource
-        return (String) sendRequest(reg, new ReadRequest(3, 0, 2))
-                .orElse("");
+        return sendRequest(reg, new ReadRequest(3, 0, 2))
+                .map(String.class::cast);
     }
 
     public Date askForCurrentTime(Registration reg) throws Exception{
         return (Date) sendRequest(reg, new ReadRequest(3,0,13))
                 .orElse(Date.from(Instant.ofEpochSecond(0)));
+    }
+
+    public ObserveResponse observeRequest(Registration reg, Integer objectId) throws InterruptedException {
+        return lwServer.send(reg, new ObserveRequest(objectId));
     }
 
     private Optional<Object> sendRequest(Registration reg, ReadRequest request) throws Exception {
