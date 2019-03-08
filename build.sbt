@@ -9,20 +9,33 @@ name := "Hops IoT Gateway"
 addCommandAlias("testc", ";clean;coverage;test;coverageReport")
 
 lazy val akkaVersion = "2.5.21"
+lazy val avroVersion = "1.8.2"
+lazy val catsVersion = "1.6.0"
 lazy val jettyVersion = "9.4.15.v20190215"
+lazy val kafkaVersion = "1.1.0"
+lazy val leshanVersion = "1.0.0-M10"
+lazy val logbackVersion = "1.1.2"
+lazy val scalaLoggingVersion = "3.9.2"
+lazy val scalaTestVersion = "3.0.5"
+lazy val scoptVersion = "4.0.0-RC2"
 
 libraryDependencies ++= Seq(
-  "org.eclipse.leshan" % "leshan-server-cf" % "1.0.0-M10",
-  "org.eclipse.leshan" % "leshan-server-demo" % "1.0.0-M10",
-  "com.github.scopt" %% "scopt" % "4.0.0-RC2",
-  "org.apache.avro" % "avro" % "1.8.2",
+  "ch.qos.logback" % "logback-classic" % logbackVersion,
+  "com.github.scopt" %% "scopt" % scoptVersion,
   "com.typesafe" % "config" % "1.3.3",
-  "org.apache.kafka" % "kafka-clients" % "1.1.0",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
-  "ch.qos.logback" % "logback-classic" % "1.1.2",
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+  "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
+  "org.apache.avro" % "avro" % avroVersion,
+  "org.apache.kafka" % "kafka-clients" % kafkaVersion,
+  "org.eclipse.leshan" % "leshan-server-cf" % leshanVersion,
+  "org.eclipse.leshan" % "leshan-server-demo" % leshanVersion,
   "org.eclipse.jetty" % "jetty-webapp" % jettyVersion,
   "org.eclipse.jetty" % "jetty-continuation" % jettyVersion,
-  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
-  "org.scalatest" %% "scalatest" % "3.0.5" % Test
+  "org.typelevel" %% "cats-core" % catsVersion
 )
+
+libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
+  "org.scalatest" %% "scalatest" % scalaTestVersion % Test
+)
+

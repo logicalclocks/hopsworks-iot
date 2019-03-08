@@ -6,6 +6,8 @@ import com.logicalclocks.leshan.LeshanActor.AskForMAC
 import com.logicalclocks.leshan.LeshanActor.DisconnectDevice
 import com.logicalclocks.leshan.LeshanActor.NewObserveResponse
 import com.logicalclocks.leshan.LeshanActor.StartServer
+import com.logicalclocks.leshan.iot.IotDevice
+import com.logicalclocks.leshan.iot.IotDeviceStatus._
 import org.eclipse.leshan.core.response.ObserveResponse
 import org.eclipse.leshan.server.registration.Registration
 import org.slf4j.Logger
@@ -17,20 +19,24 @@ class LeshanActor(config: LeshanConfig) extends Actor {
   val logger: Logger = LoggerFactory.getLogger(getClass)
   val server: HopsLeshanServer = new HopsLeshanServer(config, self)
 
-  var connectedDevices: Set[IotNode] = Set.empty
+  var connectedDevices: Set[IotDevice] = Set.empty
 
   def receive: Receive = {
     case StartServer =>
       server.createAndStartServer()
     case AskForMAC(reg) =>
       server.askForMAC(reg).asScala match {
-        case Some(x) =>
-          logger.info("New device with mac {}", x)
-          connectedDevices = connectedDevices + IotNode(reg.getId, x)
+        case Some(mac) =>
+          logger.info("New device with mac {}", mac)
+          connectedDevices = connectedDevices + IotDevice(mac, reg, REGISTRATION_COMPLETE)
           val tempObservation = server.observeRequest(reg, 3303)
-          logger.debug("Adding tempObservation status {} for {}",
+          logger.debug(
+            "Adding tempObservation status {} for {}",
             tempObservation.isSuccess,
             reg.getId)
+          logger.debug(
+            "Current amount of connected devices {}: \n{}",
+            connectedDevices.size, connectedDevices)
         case None =>
           logger.error("Error trying to get MAC from {}", reg.getId)
       }
