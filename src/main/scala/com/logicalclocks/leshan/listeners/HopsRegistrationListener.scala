@@ -3,8 +3,8 @@ package com.logicalclocks.leshan.listeners
 import java.util
 
 import akka.actor.ActorRef
-import com.logicalclocks.leshan.LeshanActor.AskForMAC
 import com.logicalclocks.leshan.LeshanActor.DisconnectDevice
+import com.logicalclocks.leshan.LeshanActor.NewDevice
 import org.eclipse.leshan.core.observation.Observation
 import org.eclipse.leshan.server.registration.Registration
 import org.eclipse.leshan.server.registration.RegistrationListener
@@ -16,14 +16,14 @@ case class HopsRegistrationListener(leshanActor: ActorRef) extends RegistrationL
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def registered(reg: Registration, previousReg: Registration, previousObsersations: util.Collection[Observation]): Unit = {
-    leshanActor ! AskForMAC(reg)
+    leshanActor ! NewDevice(reg)
   }
 
   def updated(update: RegistrationUpdate, updatedReg: Registration, previousReg: Registration): Unit = {
-    logger.debug("device is still here: " + updatedReg.getEndpoint)
   }
 
+  //TODO: make sure if I have to handle newReg
   def unregistered(reg: Registration, observations: util.Collection[Observation], expired: Boolean, newReg: Registration): Unit = {
-    leshanActor ! DisconnectDevice(reg.getId)
+    leshanActor ! DisconnectDevice(reg.getEndpoint)
   }
 }

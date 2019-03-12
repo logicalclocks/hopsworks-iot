@@ -1,5 +1,8 @@
 package com.logicalclocks.leshan.listeners
 
+import java.sql.Timestamp
+import java.util.Calendar
+
 import akka.actor.ActorRef
 import com.logicalclocks.leshan.LeshanActor.NewObserveResponse
 import org.eclipse.leshan.core.observation.Observation
@@ -21,7 +24,8 @@ case class HopsObservationListener(leshanActor: ActorRef) extends ObservationLis
   }
 
   def onResponse(observation: Observation, registration: Registration, response: ObserveResponse): Unit = {
-    leshanActor ! NewObserveResponse(registration.getId, response)
+    val timestamp: Long = System.currentTimeMillis
+    leshanActor ! NewObserveResponse(registration.getEndpoint, response, timestamp)
   }
 
   def onError(observation: Observation, registration: Registration, error: Exception): Unit = {

@@ -213,12 +213,6 @@ public class HopsLeshanServer {
         logger.info("Web server started at {}.", server.getURI());
     }
 
-    public Optional<String> askForMAC(Registration reg) throws Exception {
-        //TODO: Make sure MAC address is in /3/0/2 resource
-        return sendRequest(reg, new ReadRequest(3, 0, 2))
-                .map(String.class::cast);
-    }
-
     public Date askForCurrentTime(Registration reg) throws Exception{
         return (Date) sendRequest(reg, new ReadRequest(3,0,13))
                 .orElse(Date.from(Instant.ofEpochSecond(0)));
