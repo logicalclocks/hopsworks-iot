@@ -8,6 +8,7 @@ import com.logicalclocks.leshan.LeshanActor.NewDevice
 import com.logicalclocks.leshan.LeshanActor.NewObserveResponse
 import com.logicalclocks.leshan.LeshanActor.StartServer
 import com.logicalclocks.leshan.iot.IotDevice
+import com.logicalclocks.lwm2m.IpsoObjectMeasurement
 import org.eclipse.leshan.core.response.ObserveResponse
 import org.eclipse.leshan.server.registration.Registration
 import org.slf4j.Logger
@@ -38,7 +39,9 @@ class LeshanActor(config: LeshanConfig) extends Actor {
       logger.debug(s"Disconnect device with endpoint $endpoint. " +
         s"Currently connected devices ${connectedDevices.size}")
     case NewObserveResponse(endpoint, resp, timestamp) =>
-      logger.debug(s"New data from $endpoint at time $timestamp: observation $resp")
+      val ipsoObjects: List[IpsoObjectMeasurement] =
+        IpsoObjectMeasurement.getIpsoObjectListFromObserveResponse(resp, timestamp)
+      logger.debug(s"New data from $endpoint at time $timestamp: $ipsoObjects")
   }
 
 }
