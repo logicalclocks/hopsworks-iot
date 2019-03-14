@@ -1,7 +1,9 @@
 package com.logicalclocks.leshan
 
 import akka.actor.Actor
+import akka.actor.ActorRef
 import akka.actor.Props
+import com.logicalclocks.db.DatabaseServiceActor.AddMeasurementsToDatabase
 import com.logicalclocks.leshan.LeshanActor.ObserveTemp
 import com.logicalclocks.leshan.LeshanActor.DisconnectDevice
 import com.logicalclocks.leshan.LeshanActor.NewDevice
@@ -14,7 +16,7 @@ import org.eclipse.leshan.server.registration.Registration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class LeshanActor(config: LeshanConfig) extends Actor {
+class LeshanActor(config: LeshanConfig, dbActor: ActorRef) extends Actor {
   val logger: Logger = LoggerFactory.getLogger(getClass)
   val server: HopsLeshanServer = new HopsLeshanServer(config, self)
 
@@ -24,16 +26,13 @@ class LeshanActor(config: LeshanConfig) extends Actor {
     case StartServer =>
       server.createAndStartServer()
     case NewDevice(reg) =>
-      logger.info(s"New device connected with endpoint ${reg.getEndpoint}")
       connectedDevices = connectedDevices + IotDevice(reg)
+      logger.info(s"New device connected with endpoint ${reg.getEndpoint}." +
+        s"Currently connected devices ${connectedDevices.size}")
       // automatically observe the temp value
       self ! ObserveTemp(reg)
     case ObserveTemp(reg) =>
       val tempObservation = server.observeRequest(reg, 3303)
-      logger.debug(
-        "Adding tempObservation status {} for {}",
-        tempObservation.isSuccess,
-        reg.getEndpoint)
     case DisconnectDevice(endpoint) =>
       connectedDevices = connectedDevices.filterNot(_.endpoint == endpoint)
       logger.debug(s"Disconnect device with endpoint $endpoint. " +
@@ -41,14 +40,14 @@ class LeshanActor(config: LeshanConfig) extends Actor {
     case NewObserveResponse(endpoint, resp, timestamp) =>
       val ipsoObjects: List[IpsoObjectMeasurement] =
         IpsoObjectMeasurement.getIpsoObjectListFromObserveResponse(resp, timestamp)
-      logger.debug(s"New data from $endpoint at time $timestamp: $ipsoObjects")
+      dbActor ! AddMeasurementsToDatabase(ipsoObjects)
   }
 
 }
 
 object LeshanActor {
 
-  def props(config: LeshanConfig): Props = Props(new LeshanActor(config))
+  def props(config: LeshanConfig, dbActor: ActorRef): Props = Props(new LeshanActor(config, dbActor))
 
   final object StartServer
 

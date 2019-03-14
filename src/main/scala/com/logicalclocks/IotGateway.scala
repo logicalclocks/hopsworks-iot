@@ -2,6 +2,7 @@ package com.logicalclocks
 
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
+import com.logicalclocks.db.DatabaseServiceActor
 import com.logicalclocks.leshan.LeshanActor
 import com.logicalclocks.leshan.LeshanActor.StartServer
 import com.logicalclocks.leshan.LeshanConfig
@@ -43,8 +44,11 @@ object IotGateway extends App {
       throw new Error("Argument parse error")
   }
 
+  val dbActor: ActorRef =
+    system.actorOf(DatabaseServiceActor.props())
+
   val leshanActor: ActorRef =
-    system.actorOf(LeshanActor.props(leshanConfig))
+    system.actorOf(LeshanActor.props(leshanConfig, dbActor))
 
   leshanActor ! StartServer
 
