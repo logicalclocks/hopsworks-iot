@@ -8,12 +8,14 @@ import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
 sealed trait IpsoObjectMeasurement {
+  val endpointClientName: String
   val objectId: Int
   val timestamp: Long
 }
 
 case class TempIpsoObjectMeasurement(
   timestamp: Long,
+  endpointClientName: String,
   sensorValue: Double,
   minMeasuredValue: Option[Double],
   maxMeasuredValue: Option[Double],
@@ -25,7 +27,7 @@ case class TempIpsoObjectMeasurement(
 }
 
 object IpsoObjectMeasurement {
-  def getIpsoObjectListFromObserveResponse(resp: ObserveResponse, timestamp: Long): List[IpsoObjectMeasurement] =
+  def getIpsoObjectListFromObserveResponse(endpointClientName: String, resp: ObserveResponse, timestamp: Long): List[IpsoObjectMeasurement] =
     resp.getContent.getId match {
       case 3303 =>
         val instances: Iterable[LwM2mObjectInstance] =
@@ -35,11 +37,11 @@ object IpsoObjectMeasurement {
             .getInstances
             .asScala
             .values
-        extractTempFromInstances(instances, timestamp)
+        extractTempFromInstances(endpointClientName, instances, timestamp)
       case _ => throw new Error("Unknown ipso object")
     }
 
-  private def extractTempFromInstances(instances: Iterable[LwM2mObjectInstance], timestamp: Long): List[IpsoObjectMeasurement] = {
+  private def extractTempFromInstances(endpointClientName: String, instances: Iterable[LwM2mObjectInstance], timestamp: Long): List[IpsoObjectMeasurement] = {
     @tailrec
     def iter(instances: Iterable[LwM2mObjectInstance], measurements: List[IpsoObjectMeasurement]): List[IpsoObjectMeasurement] = {
       instances.headOption match {
@@ -51,6 +53,7 @@ object IpsoObjectMeasurement {
             .mapValues(_.getValue)
           val obj = TempIpsoObjectMeasurement(
             timestamp,
+            endpointClientName,
             resources(5700).asInstanceOf[Double],
             resources.get(5601).map(_.asInstanceOf[Double]),
             resources.get(5602).map(_.asInstanceOf[Double]),

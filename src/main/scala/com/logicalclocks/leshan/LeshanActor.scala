@@ -39,7 +39,10 @@ class LeshanActor(config: LeshanConfig, dbActor: ActorRef) extends Actor {
         s"Currently connected devices ${connectedDevices.size}")
     case NewObserveResponse(endpoint, resp, timestamp) =>
       val ipsoObjects: List[IpsoObjectMeasurement] =
-        IpsoObjectMeasurement.getIpsoObjectListFromObserveResponse(resp, timestamp)
+        IpsoObjectMeasurement.getIpsoObjectListFromObserveResponse(
+          endpoint,
+          resp,
+          timestamp)
       dbActor ! AddMeasurementsToDatabase(ipsoObjects)
   }
 
