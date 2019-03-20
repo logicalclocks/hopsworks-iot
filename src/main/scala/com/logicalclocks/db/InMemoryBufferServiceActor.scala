@@ -1,13 +1,16 @@
 package com.logicalclocks.db
 
 import akka.actor.Actor
+import akka.actor.ActorRef
 import akka.actor.Props
-import com.logicalclocks.db.DatabaseServiceActor.AddMeasurementsToDatabase
+import com.logicalclocks.db.InMemoryBufferServiceActor.AddMeasurementsToDatabase
+import com.logicalclocks.db.InMemoryBufferServiceActor.GetMeasurements
+import com.logicalclocks.kafka.ProducerServiceActor.ReceiveMeasurements
 import com.logicalclocks.lwm2m.IpsoObjectMeasurement
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class DatabaseServiceActor() extends Actor {
+class InMemoryBufferServiceActor() extends Actor {
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   var measurementsBuffer: List[IpsoObjectMeasurement] = List.empty
@@ -16,11 +19,16 @@ class DatabaseServiceActor() extends Actor {
     case AddMeasurementsToDatabase(measurements) =>
       logger.debug("DB add: {}", measurements)
       measurementsBuffer = measurementsBuffer ::: measurements
+    case GetMeasurements(actor) =>
+      actor ! ReceiveMeasurements(measurementsBuffer)
+      measurementsBuffer = List.empty
   }
 }
 
-object DatabaseServiceActor {
-  def props(): Props = Props(new DatabaseServiceActor)
+object InMemoryBufferServiceActor {
+  def props(): Props = Props(new InMemoryBufferServiceActor())
 
   final case class AddMeasurementsToDatabase(measurements: List[IpsoObjectMeasurement])
+
+  final case class GetMeasurements(actor: ActorRef)
 }

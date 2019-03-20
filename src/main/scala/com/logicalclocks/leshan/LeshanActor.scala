@@ -3,7 +3,7 @@ package com.logicalclocks.leshan
 import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Props
-import com.logicalclocks.db.DatabaseServiceActor.AddMeasurementsToDatabase
+import com.logicalclocks.db.InMemoryBufferServiceActor.AddMeasurementsToDatabase
 import com.logicalclocks.leshan.LeshanActor.ObserveTemp
 import com.logicalclocks.leshan.LeshanActor.DisconnectDevice
 import com.logicalclocks.leshan.LeshanActor.NewDevice

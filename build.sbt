@@ -18,10 +18,12 @@ lazy val logbackVersion = "1.1.2"
 lazy val scalaLoggingVersion = "3.9.2"
 lazy val scalaTestVersion = "3.0.5"
 lazy val scoptVersion = "4.0.0-RC2"
+lazy val avro4sVersion = "2.0.4"
 
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % logbackVersion,
   "com.github.scopt" %% "scopt" % scoptVersion,
+  "com.sksamuel.avro4s" %% "avro4s-kafka" % avro4sVersion,
   "com.typesafe" % "config" % "1.3.3",
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
   "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
@@ -35,7 +37,7 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
-  "org.scalatest" %% "scalatest" % scalaTestVersion % Test
+  "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test
 )
 

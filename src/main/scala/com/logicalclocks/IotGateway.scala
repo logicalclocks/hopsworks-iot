@@ -2,7 +2,8 @@ package com.logicalclocks
 
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
-import com.logicalclocks.db.DatabaseServiceActor
+import com.logicalclocks.db.InMemoryBufferServiceActor
+import com.logicalclocks.kafka.ProducerServiceActor
 import com.logicalclocks.leshan.LeshanActor
 import com.logicalclocks.leshan.LeshanActor.StartServer
 import com.logicalclocks.leshan.LeshanConfig
@@ -12,7 +13,6 @@ import org.slf4j.LoggerFactory
 import scopt.OParser
 
 object IotGateway extends App {
-
   val logger: Logger = LoggerFactory.getLogger(getClass)
   val builder = OParser.builder[Config]
   val parser1 = {
@@ -45,7 +45,10 @@ object IotGateway extends App {
   }
 
   val dbActor: ActorRef =
-    system.actorOf(DatabaseServiceActor.props())
+    system.actorOf(InMemoryBufferServiceActor.props())
+
+  val producerActor: ActorRef =
+    system.actorOf(ProducerServiceActor.props(dbActor))
 
   val leshanActor: ActorRef =
     system.actorOf(LeshanActor.props(leshanConfig, dbActor))

@@ -1,5 +1,6 @@
 package com.logicalclocks.lwm2m
 
+import com.sksamuel.avro4s.AvroProp
 import org.eclipse.leshan.core.node.LwM2mObject
 import org.eclipse.leshan.core.node.LwM2mObjectInstance
 import org.eclipse.leshan.core.response.ObserveResponse
@@ -13,6 +14,7 @@ sealed trait IpsoObjectMeasurement {
   val timestamp: Long
 }
 
+@AvroProp("objectId", "3303")
 case class TempIpsoObjectMeasurement(
   timestamp: Long,
   endpointClientName: String,
