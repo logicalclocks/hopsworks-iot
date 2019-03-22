@@ -1,8 +1,5 @@
 package com.logicalclocks.leshan.listeners
 
-import java.sql.Timestamp
-import java.util.Calendar
-
 import akka.actor.ActorRef
 import com.logicalclocks.leshan.LeshanActor.NewObserveResponse
 import org.eclipse.leshan.core.observation.Observation
