@@ -41,3 +41,4 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test
 )
 
+mainClass in assembly := Some("com.logicalclocks.IotGateway")

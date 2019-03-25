@@ -7,7 +7,6 @@ import org.eclipse.leshan.core.response.ObserveResponse
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
-
 case class ObserveResponseUnwrapper(
   timestamp: Long,
   endpointClientName: String,
