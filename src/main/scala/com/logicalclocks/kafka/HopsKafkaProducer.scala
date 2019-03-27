@@ -58,13 +58,16 @@ case class HopsKafkaProducer() {
     val record = new GenericData.Record(schema)
     record.put("timestamp", measurement.timestamp)
     record.put("endpointClientName", measurement.endpointClientName)
-    record.put("sensorValue", measurement.sensorValue)
-    measurement.minMeasuredValue.foreach(record.put("minMeasuredValue", _))
-    measurement.maxMeasuredValue.foreach(record.put("maxMeasuredValue", _))
-    measurement.minRangeValue.foreach(record.put("minRangeValue", _))
-    measurement.maxRangeValue.foreach(record.put("maxRangeValue", _))
-    measurement.sensorUnits.foreach(record.put("sensorUnits", _))
-    measurement.resetMinAndMaxMeasuredValues.foreach(record.put("resetMinAndMaxMeasuredValues", _))
+    record.put("instanceId", measurement.instanceId)
+    val ipsoObject = new GenericData.Record(schema.getField("ipsoObject").schema)
+    ipsoObject.put("sensorValue", measurement.ipsoObject.sensorValue)
+    measurement.ipsoObject.minMeasuredValue.foreach(ipsoObject.put("minMeasuredValue", _))
+    measurement.ipsoObject.maxMeasuredValue.foreach(ipsoObject.put("maxMeasuredValue", _))
+    measurement.ipsoObject.minRangeValue.foreach(ipsoObject.put("minRangeValue", _))
+    measurement.ipsoObject.maxRangeValue.foreach(ipsoObject.put("maxRangeValue", _))
+    measurement.ipsoObject.sensorUnits.foreach(ipsoObject.put("sensorUnits", _))
+    measurement.ipsoObject.resetMinAndMaxMeasuredValues.foreach(ipsoObject.put("resetMinAndMaxMeasuredValues", _))
+    record.put("ipsoObject", ipsoObject)
     record
   }
 

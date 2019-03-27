@@ -3,21 +3,19 @@ package com.logicalclocks.lwm2m
 import com.sksamuel.avro4s.AvroProp
 
 sealed trait IpsoObjectMeasurement {
+  val timestamp: Long
   val endpointClientName: String
   val objectId: Int
-  val timestamp: Long
+  val instanceId: Int
+  val ipsoObject: IpsoObject
 }
 
 @AvroProp("objectId", "3303")
 case class TempIpsoObjectMeasurement(
   timestamp: Long,
   endpointClientName: String,
-  sensorValue: Double,
-  minMeasuredValue: Option[Double],
-  maxMeasuredValue: Option[Double],
-  minRangeValue: Option[Double],
-  maxRangeValue: Option[Double],
-  sensorUnits: Option[String],
-  resetMinAndMaxMeasuredValues: Option[Boolean]) extends IpsoObjectMeasurement {
+  instanceId: Int,
+  ipsoObject: TempIpsoObject) extends IpsoObjectMeasurement {
   val objectId: Int = 3303
 }
+

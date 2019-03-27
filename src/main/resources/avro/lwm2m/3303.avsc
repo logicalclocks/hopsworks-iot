@@ -1,17 +1,20 @@
 {
-  "type":"record",
-  "name":"TempIpsoObjectMeasurement",
-  "namespace":"schemas",
-  "fields":[
-    {"name":"timestamp","type":"long"},
-    {"name":"endpointClientName","type":"string"},
-    {"name":"sensorValue","type":"double"},
-    {"name":"minMeasuredValue","type":["null","double"]},
-    {"name":"maxMeasuredValue","type":["null","double"]},
-    {"name":"minRangeValue","type":["null","double"]},
-    {"name":"maxRangeValue","type":["null","double"]},
-    {"name":"sensorUnits","type":["null","string"]},
-    {"name":"resetMinAndMaxMeasuredValues","type":["null","boolean"]}
-  ],
-  "objectId":"3303"
+    "type":"record",
+    "name":"TempIpsoObjectMeasurement",
+    "namespace":"com.logicalclocks.lwm2m",
+    "fields":[
+        {"name":"timestamp","type":"long"},
+        {"name":"endpointClientName","type":"string"},
+        {"name":"instanceId","type":"int"},
+        {"name":"ipsoObject","type":{"type":"record","name":"TempIpsoObject","fields":[
+            {"name":"sensorValue","type":"double"},
+            {"name":"minMeasuredValue","type":["null","double"]},
+            {"name":"maxMeasuredValue","type":["null","double"]},
+            {"name":"minRangeValue","type":["null","double"]},
+            {"name":"maxRangeValue","type":["null","double"]},
+            {"name":"sensorUnits","type":["null","string"]},
+            {"name":"resetMinAndMaxMeasuredValues","type":["null","boolean"]}
+        ]}}
+    ],
+    "objectId":"3303"
 }

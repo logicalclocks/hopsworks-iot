@@ -18,7 +18,7 @@ class InMemoryBufferServiceActor() extends Actor {
   def receive: Receive = {
     case AddMeasurementsToDatabase(measurements) =>
       logger.debug("DB add: {}", measurements)
-      measurementsBuffer = measurementsBuffer ::: measurements
+      measurementsBuffer = measurementsBuffer ::: measurements.toList
     case GetMeasurements(actor) =>
       actor ! ReceiveMeasurements(measurementsBuffer)
       measurementsBuffer = List.empty
@@ -28,7 +28,7 @@ class InMemoryBufferServiceActor() extends Actor {
 object InMemoryBufferServiceActor {
   def props(): Props = Props(new InMemoryBufferServiceActor())
 
-  final case class AddMeasurementsToDatabase(measurements: List[IpsoObjectMeasurement])
+  final case class AddMeasurementsToDatabase(measurements: Iterable[IpsoObjectMeasurement])
 
   final case class GetMeasurements(actor: ActorRef)
 }

@@ -39,9 +39,9 @@ class LeshanActor(config: LeshanConfig, dbActor: ActorRef) extends Actor {
       logger.debug(s"Disconnect device with endpoint $endpoint. " +
         s"Currently connected devices ${connectedDevices.size}")
     case NewObserveResponse(endpoint, resp, timestamp) =>
-      val ipsoObjects: List[IpsoObjectMeasurement] =
+      val ipsoObjects: Iterable[IpsoObjectMeasurement] =
         ObserveResponseUnwrapper(timestamp, endpoint, resp)
-          .getIpsoObjectList()
+          .getIpsoObjectList
       dbActor ! AddMeasurementsToDatabase(ipsoObjects)
   }
 

@@ -77,5 +77,5 @@ object ProducerServiceActor {
 
   final object PollDatabase
 
-  final case class ReceiveMeasurements(list: List[IpsoObjectMeasurement])
+  final case class ReceiveMeasurements(list: Iterable[IpsoObjectMeasurement])
 }
