@@ -1,4 +1,4 @@
-package com.logicalclocks.leshan
+package com.logicalclocks.iot.leshan
 
 case class LeshanConfig(
   coapsHost: String,

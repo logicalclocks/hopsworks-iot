@@ -1,12 +1,12 @@
-package com.logicalclocks
+package com.logicalclocks.iot
 
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
-import com.logicalclocks.db.InMemoryBufferServiceActor
-import com.logicalclocks.kafka.ProducerServiceActor
-import com.logicalclocks.leshan.LeshanActor
-import com.logicalclocks.leshan.LeshanActor.StartServer
-import com.logicalclocks.leshan.LeshanConfig
+import com.logicalclocks.iot.db.InMemoryBufferServiceActor
+import com.logicalclocks.iot.kafka.ProducerServiceActor
+import com.logicalclocks.iot.leshan.LeshanActor
+import com.logicalclocks.iot.leshan.LeshanActor.StartServer
+import com.logicalclocks.iot.leshan.LeshanConfig
 import org.eclipse.leshan.LwM2m
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

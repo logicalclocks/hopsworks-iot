@@ -1,17 +1,17 @@
-package com.logicalclocks.leshan
+package com.logicalclocks.iot.leshan
 
 import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Props
-import com.logicalclocks.db.InMemoryBufferServiceActor.AddMeasurementsToDatabase
-import com.logicalclocks.leshan.LeshanActor.ObserveTemp
-import com.logicalclocks.leshan.LeshanActor.DisconnectDevice
-import com.logicalclocks.leshan.LeshanActor.NewDevice
-import com.logicalclocks.leshan.LeshanActor.NewObserveResponse
-import com.logicalclocks.leshan.LeshanActor.StartServer
-import com.logicalclocks.leshan.iot.IotDevice
-import com.logicalclocks.lwm2m.IpsoObjectMeasurement
-import com.logicalclocks.lwm2m.ObserveResponseUnwrapper
+import com.logicalclocks.iot.db.InMemoryBufferServiceActor.AddMeasurementsToDatabase
+import com.logicalclocks.iot.leshan.LeshanActor.ObserveTemp
+import com.logicalclocks.iot.leshan.LeshanActor.DisconnectDevice
+import com.logicalclocks.iot.leshan.LeshanActor.NewDevice
+import com.logicalclocks.iot.leshan.LeshanActor.NewObserveResponse
+import com.logicalclocks.iot.leshan.LeshanActor.StartServer
+import com.logicalclocks.iot.leshan.devices.IotDevice
+import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
+import com.logicalclocks.iot.lwm2m.ObserveResponseUnwrapper
 import org.eclipse.leshan.core.response.ObserveResponse
 import org.eclipse.leshan.server.registration.Registration
 import org.slf4j.Logger

@@ -1,4 +1,4 @@
-package com.logicalclocks.lwm2m
+package com.logicalclocks.iot.lwm2m
 
 import com.sksamuel.avro4s.AvroProp
 

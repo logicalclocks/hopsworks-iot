@@ -1,4 +1,4 @@
-package com.logicalclocks.leshan.iot
+package com.logicalclocks.iot.leshan.devices
 
 import org.eclipse.leshan.server.registration.Registration
 

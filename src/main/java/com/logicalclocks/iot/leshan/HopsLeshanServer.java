@@ -19,11 +19,11 @@
 /*
   Borrowing some code from org.eclipse.leshan.server.demo.LeshanServerDemo
  */
-package com.logicalclocks.leshan;
+package com.logicalclocks.iot.leshan;
 
 import akka.actor.ActorRef;
-import com.logicalclocks.leshan.listeners.HopsObservationListener;
-import com.logicalclocks.leshan.listeners.HopsRegistrationListener;
+import com.logicalclocks.iot.leshan.listeners.HopsObservationListener;
+import com.logicalclocks.iot.leshan.listeners.HopsRegistrationListener;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.CertificateMessage;

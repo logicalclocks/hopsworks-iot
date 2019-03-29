@@ -1,11 +1,11 @@
-package com.logicalclocks.kafka
+package com.logicalclocks.iot.kafka
 
 import java.io.ByteArrayOutputStream
 import java.util.Properties
 
-import com.logicalclocks.commons.PropertiesReader
-import com.logicalclocks.lwm2m.IpsoObjectMeasurement
-import com.logicalclocks.lwm2m.TempIpsoObjectMeasurement
+import com.logicalclocks.iot.commons.PropertiesReader
+import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
+import com.logicalclocks.iot.lwm2m.TempIpsoObjectMeasurement
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord

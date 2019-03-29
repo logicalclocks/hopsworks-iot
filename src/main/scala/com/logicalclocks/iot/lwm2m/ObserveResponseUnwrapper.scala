@@ -1,4 +1,4 @@
-package com.logicalclocks.lwm2m
+package com.logicalclocks.iot.lwm2m
 
 import org.eclipse.leshan.core.node.LwM2mObject
 import org.eclipse.leshan.core.node.LwM2mObjectInstance

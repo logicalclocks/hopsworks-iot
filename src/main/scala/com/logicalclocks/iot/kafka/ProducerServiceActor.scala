@@ -1,4 +1,4 @@
-package com.logicalclocks.kafka
+package com.logicalclocks.iot.kafka
 
 import java.io.File
 
@@ -6,10 +6,10 @@ import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Cancellable
 import akka.actor.Props
-import com.logicalclocks.db.InMemoryBufferServiceActor.GetMeasurements
-import com.logicalclocks.kafka.ProducerServiceActor.PollDatabase
-import com.logicalclocks.kafka.ProducerServiceActor.ReceiveMeasurements
-import com.logicalclocks.lwm2m.IpsoObjectMeasurement
+import com.logicalclocks.iot.db.InMemoryBufferServiceActor.GetMeasurements
+import com.logicalclocks.iot.kafka.ProducerServiceActor.PollDatabase
+import com.logicalclocks.iot.kafka.ProducerServiceActor.ReceiveMeasurements
+import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
 import org.slf4j.Logger

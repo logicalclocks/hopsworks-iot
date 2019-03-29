@@ -1,7 +1,7 @@
-package com.logicalclocks.leshan.listeners
+package com.logicalclocks.iot.leshan.listeners
 
 import akka.actor.ActorRef
-import com.logicalclocks.leshan.LeshanActor.NewObserveResponse
+import com.logicalclocks.iot.leshan.LeshanActor.NewObserveResponse
 import org.eclipse.leshan.core.observation.Observation
 import org.eclipse.leshan.core.response.ObserveResponse
 import org.eclipse.leshan.server.observation.ObservationListener

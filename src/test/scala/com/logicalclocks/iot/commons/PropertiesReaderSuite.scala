@@ -1,4 +1,4 @@
-package com.logicalclocks.commons
+package com.logicalclocks.iot.commons
 
 import java.util.Properties
 

@@ -1,12 +1,12 @@
-package com.logicalclocks.db
+package com.logicalclocks.iot.db
 
 import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Props
-import com.logicalclocks.db.InMemoryBufferServiceActor.AddMeasurementsToDatabase
-import com.logicalclocks.db.InMemoryBufferServiceActor.GetMeasurements
-import com.logicalclocks.kafka.ProducerServiceActor.ReceiveMeasurements
-import com.logicalclocks.lwm2m.IpsoObjectMeasurement
+import com.logicalclocks.iot.db.InMemoryBufferServiceActor.AddMeasurementsToDatabase
+import com.logicalclocks.iot.db.InMemoryBufferServiceActor.GetMeasurements
+import com.logicalclocks.iot.kafka.ProducerServiceActor.ReceiveMeasurements
+import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

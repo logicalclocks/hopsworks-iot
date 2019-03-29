@@ -1,10 +1,10 @@
-package com.logicalclocks.leshan.listeners
+package com.logicalclocks.iot.leshan.listeners
 
 import java.util
 
 import akka.actor.ActorRef
-import com.logicalclocks.leshan.LeshanActor.DisconnectDevice
-import com.logicalclocks.leshan.LeshanActor.NewDevice
+import com.logicalclocks.iot.leshan.LeshanActor.DisconnectDevice
+import com.logicalclocks.iot.leshan.LeshanActor.NewDevice
 import org.eclipse.leshan.core.observation.Observation
 import org.eclipse.leshan.server.registration.Registration
 import org.eclipse.leshan.server.registration.RegistrationListener
