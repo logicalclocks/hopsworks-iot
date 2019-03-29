@@ -3,6 +3,8 @@ package com.logicalclocks.iot
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import com.logicalclocks.iot.db.InMemoryBufferServiceActor
+import com.logicalclocks.iot.hopsworks.HopsworksServiceActor
+import com.logicalclocks.iot.hopsworks.HopsworksServiceActor.StartHopsworksServer
 import com.logicalclocks.iot.kafka.ProducerServiceActor
 import com.logicalclocks.iot.leshan.LeshanActor
 import com.logicalclocks.iot.leshan.LeshanActor.StartServer
@@ -53,8 +55,11 @@ object IotGateway extends App {
   val leshanActor: ActorRef =
     system.actorOf(LeshanActor.props(leshanConfig, dbActor))
 
-  leshanActor ! StartServer
+  val hopsworksActor: ActorRef =
+    system.actorOf(HopsworksServiceActor.props("localhost", 12222))
 
+  leshanActor ! StartServer
+  hopsworksActor ! StartHopsworksServer
 }
 
 case class Config(
