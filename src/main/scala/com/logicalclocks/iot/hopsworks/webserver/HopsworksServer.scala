@@ -1,5 +1,6 @@
 package com.logicalclocks.iot.hopsworks.webserver
 
+import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
@@ -9,7 +10,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContextExecutor
 
-case class HopsworksServer(host: String, port: Int)
+case class HopsworksServer(host: String, port: Int, leshanActor: ActorRef)
   extends HopsworksService with Loggable {
 
   implicit val system: ActorSystem = ActorSystem()

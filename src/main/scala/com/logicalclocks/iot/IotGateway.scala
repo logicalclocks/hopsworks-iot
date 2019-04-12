@@ -56,7 +56,7 @@ object IotGateway extends App {
     system.actorOf(LeshanActor.props(leshanConfig, dbActor))
 
   val hopsworksActor: ActorRef =
-    system.actorOf(HopsworksServiceActor.props("localhost", 12222))
+    system.actorOf(HopsworksServiceActor.props("localhost", 12222, leshanActor))
 
   leshanActor ! StartServer
   hopsworksActor ! StartHopsworksServer

@@ -6,6 +6,8 @@ import akka.actor.Props
 import com.logicalclocks.iot.db.InMemoryBufferServiceActor.AddMeasurementsToDatabase
 import com.logicalclocks.iot.leshan.LeshanActor.ObserveTemp
 import com.logicalclocks.iot.leshan.LeshanActor.DisconnectDevice
+import com.logicalclocks.iot.leshan.LeshanActor.GetConnectedDevices
+import com.logicalclocks.iot.leshan.LeshanActor.GetLeshanConfig
 import com.logicalclocks.iot.leshan.LeshanActor.NewDevice
 import com.logicalclocks.iot.leshan.LeshanActor.NewObserveResponse
 import com.logicalclocks.iot.leshan.LeshanActor.StartServer
@@ -33,7 +35,7 @@ class LeshanActor(config: LeshanConfig, dbActor: ActorRef) extends Actor {
       // automatically observe the temp value
       self ! ObserveTemp(reg)
     case ObserveTemp(reg) =>
-      val tempObservation = server.observeRequest(reg, 3303)
+      val _ = server.observeRequest(reg, 3303)
     case DisconnectDevice(endpoint) =>
       connectedDevices = connectedDevices.filterNot(_.endpoint == endpoint)
       logger.debug(s"Disconnect device with endpoint $endpoint. " +
@@ -43,6 +45,10 @@ class LeshanActor(config: LeshanConfig, dbActor: ActorRef) extends Actor {
         ObserveResponseUnwrapper(timestamp, endpoint, resp)
           .getIpsoObjectList
       dbActor ! AddMeasurementsToDatabase(ipsoObjects)
+    case GetConnectedDevices =>
+      sender ! connectedDevices
+    case GetLeshanConfig =>
+      sender ! config
   }
 
 }
@@ -60,4 +66,8 @@ object LeshanActor {
   final case class DisconnectDevice(endpoint: String)
 
   final case class NewObserveResponse(endpoint: String, response: ObserveResponse, timestamp: Long)
+
+  final object GetConnectedDevices
+
+  final object GetLeshanConfig
 }
