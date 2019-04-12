@@ -1,5 +1,6 @@
 package com.logicalclocks.iot.commons
 
+import com.logicalclocks.iot.leshan.LeshanConfig
 import com.logicalclocks.iot.leshan.devices.IotDevice
 import spray.json.DefaultJsonProtocol
 import spray.json.JsNumber
@@ -18,4 +19,6 @@ object HopsworksJsonProtocol extends DefaultJsonProtocol {
 
     def read(json: JsValue): IotDevice = ???
   }
+
+  implicit val leshanConfigFormat = jsonFormat4(LeshanConfig)
 }

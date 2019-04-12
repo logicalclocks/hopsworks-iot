@@ -17,6 +17,8 @@ import scala.concurrent.duration._
 import scala.concurrent.Future
 import spray.json._
 import com.logicalclocks.iot.commons.HopsworksJsonProtocol._
+import com.logicalclocks.iot.leshan.LeshanActor.GetLeshanConfig
+import com.logicalclocks.iot.leshan.LeshanConfig
 
 trait HopsworksService {
 
@@ -27,10 +29,10 @@ trait HopsworksService {
   val route: Route = {
     pathPrefix("nodes") {
       (pathEnd & get) {
-        val future: Future[Set[IotDevice]] = ask(leshanActor, GetConnectedDevices).mapTo[Set[IotDevice]]
-        val devices: Set[IotDevice] = Await.result(future, timeout.duration)
+        val devicesF: Future[Set[IotDevice]] = ask(leshanActor, GetConnectedDevices).mapTo[Set[IotDevice]]
+        val devices: Set[IotDevice] = Await.result(devicesF, timeout.duration)
         val json: JsValue = devices.toList.sortBy(_.endpoint).toJson
-        completeJson(json.toString)
+        completeJson(json)
       } ~
         (path(Segment / "ignored") & post) { deviceId =>
           complete("/nodes/" + deviceId + "/ignored")
@@ -40,11 +42,13 @@ trait HopsworksService {
         complete("/jwt")
       } ~
       (pathEndOrSingleSlash & get) {
-        complete("/")
+        val configF: Future[LeshanConfig] = ask(leshanActor, GetLeshanConfig).mapTo[LeshanConfig]
+        val config: LeshanConfig = Await.result(configF, timeout.duration)
+        completeJson(config.toJson)
       }
   }
 
-  private def completeJson(json: String): StandardRoute =
-    complete(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`, json)))
+  private def completeJson(json: JsValue): StandardRoute =
+    complete(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`, json.toString)))
 
 }

@@ -41,7 +41,7 @@ object IotGateway extends App {
         config.coapsHost,
         config.coapsPort,
         "",
-        5683)
+        LwM2m.DEFAULT_COAP_PORT)
     case _ =>
       throw new Error("Argument parse error")
   }
