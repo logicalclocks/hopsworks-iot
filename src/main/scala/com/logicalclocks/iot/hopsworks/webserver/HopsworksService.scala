@@ -17,6 +17,8 @@ import scala.concurrent.duration._
 import scala.concurrent.Future
 import spray.json._
 import com.logicalclocks.iot.commons.HopsworksJsonProtocol._
+import com.logicalclocks.iot.leshan.LeshanActor.BlockDeviceWithEndpoint
+import com.logicalclocks.iot.leshan.LeshanActor.GetBlockedEndpoints
 import com.logicalclocks.iot.leshan.LeshanActor.GetLeshanConfig
 import com.logicalclocks.iot.leshan.LeshanConfig
 
@@ -26,29 +28,51 @@ trait HopsworksService {
 
   implicit val timeout: Timeout = Timeout(5 seconds)
 
-  val route: Route = {
-    pathPrefix("nodes") {
-      (pathEnd & get) {
-        val devicesF: Future[Set[IotDevice]] = ask(leshanActor, GetConnectedDevices).mapTo[Set[IotDevice]]
-        val devices: Set[IotDevice] = Await.result(devicesF, timeout.duration)
-        val json: JsValue = devices.toList.sortBy(_.endpoint).toJson
-        completeJson(json)
-      } ~
-        (path(Segment / "ignored") & post) { deviceId =>
-          complete("/nodes/" + deviceId + "/ignored")
-        }
+  val route: Route =
+    pathPrefix("gateway" / "nodes") {
+      getNodesRoute ~
+        postIgnoreNodesRoute
     } ~
-      (path("jwt") & post) {
-        complete("/jwt")
-      } ~
-      (pathEndOrSingleSlash & get) {
-        val configF: Future[LeshanConfig] = ask(leshanActor, GetLeshanConfig).mapTo[LeshanConfig]
-        val config: LeshanConfig = Await.result(configF, timeout.duration)
-        completeJson(config.toJson)
+      pathPrefix("gateway") {
+        postJwtRoute ~
+          getRootPathRoute
       }
+
+  val getRootPathRoute: Route = (pathEndOrSingleSlash & get) {
+    val configF: Future[LeshanConfig] = ask(leshanActor, GetLeshanConfig).mapTo[LeshanConfig]
+    val blockedDevicesF: Future[Set[String]] = ask(leshanActor, GetBlockedEndpoints).mapTo[Set[String]]
+    val config: LeshanConfig = Await.result(configF, timeout.duration)
+    val blockedDevices: Set[String] = Await.result(blockedDevicesF, timeout.duration)
+    val status = IotGatewayStatus(config, blockedDevices)
+    completeJson(status.toJson)
+  }
+
+  val getNodesRoute: Route = (pathEnd & get) {
+    val devicesF: Future[Set[IotDevice]] = ask(leshanActor, GetConnectedDevices).mapTo[Set[IotDevice]]
+    val devices: Set[IotDevice] = Await.result(devicesF, timeout.duration)
+    val json: JsValue = devices.toVector.sortBy(_.endpoint).toJson
+    completeJson(json)
+  }
+
+  val postIgnoreNodesRoute: Route = (path(Segment / "ignored") & post) {
+    endpoint =>
+      {
+        parameters('block.as[Boolean]) { block =>
+          val statusF: Future[Boolean] = ask(leshanActor, BlockDeviceWithEndpoint(endpoint, block)).mapTo[Boolean]
+          val status: Boolean = Await.result(statusF, timeout.duration)
+          val statusM = Map("status" -> status).toJson
+          completeJson(statusM)
+        }
+      }
+  }
+
+  val postJwtRoute: Route = (path("jwt") & post) {
+    complete("/jwt")
   }
 
   private def completeJson(json: JsValue): StandardRoute =
     complete(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`, json.toString)))
 
 }
+
+case class IotGatewayStatus(config: LeshanConfig, blockedDevicesEndpoints: Set[String])

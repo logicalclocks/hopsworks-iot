@@ -5,6 +5,7 @@ import akka.actor.ActorRef
 import akka.actor.Props
 import com.logicalclocks.iot.db.InMemoryBufferServiceActor.AddMeasurementsToDatabase
 import com.logicalclocks.iot.db.InMemoryBufferServiceActor.GetMeasurements
+import com.logicalclocks.iot.db.InMemoryBufferServiceActor.UpdateDeviceBlockStatus
 import com.logicalclocks.iot.kafka.ProducerServiceActor.ReceiveMeasurements
 import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
 import org.slf4j.Logger
@@ -14,6 +15,7 @@ class InMemoryBufferServiceActor() extends Actor {
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   var measurementsBuffer: List[IpsoObjectMeasurement] = List.empty
+  var blockedDevicesEndpointsBuffer: Set[String] = Set.empty
 
   def receive: Receive = {
     case AddMeasurementsToDatabase(measurements) =>
@@ -22,6 +24,12 @@ class InMemoryBufferServiceActor() extends Actor {
     case GetMeasurements(actor) =>
       actor ! ReceiveMeasurements(measurementsBuffer)
       measurementsBuffer = List.empty
+    case UpdateDeviceBlockStatus(endpoint, block) =>
+      if (block) {
+        blockedDevicesEndpointsBuffer = blockedDevicesEndpointsBuffer + endpoint
+      } else {
+        blockedDevicesEndpointsBuffer = blockedDevicesEndpointsBuffer - endpoint
+      }
   }
 }
 
@@ -31,4 +39,6 @@ object InMemoryBufferServiceActor {
   final case class AddMeasurementsToDatabase(measurements: Iterable[IpsoObjectMeasurement])
 
   final case class GetMeasurements(actor: ActorRef)
+
+  final case class UpdateDeviceBlockStatus(endpoint: String, block: Boolean)
 }
