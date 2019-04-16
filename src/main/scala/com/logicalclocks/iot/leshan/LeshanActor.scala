@@ -50,7 +50,8 @@ class LeshanActor(config: LeshanConfig, dbActor: ActorRef) extends Actor {
       val ipsoObjects: Iterable[IpsoObjectMeasurement] =
         ObserveResponseUnwrapper(timestamp, endpoint, resp)
           .getIpsoObjectList
-      dbActor ! AddMeasurementsToDatabase(ipsoObjects)
+      if (!blockedDevicesEndpoints.contains(endpoint))
+        dbActor ! AddMeasurementsToDatabase(ipsoObjects)
     case GetConnectedDevices =>
       sender ! connectedDevices
     case GetBlockedEndpoints =>

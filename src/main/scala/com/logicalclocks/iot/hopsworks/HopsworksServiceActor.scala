@@ -9,6 +9,7 @@ import com.logicalclocks.iot.hopsworks.webserver.HopsworksServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import scala.concurrent.ExecutionContextExecutor
 import scala.util.Failure
 import scala.util.Success
 
@@ -19,11 +20,13 @@ class HopsworksServiceActor(
   hopsworksPort: Int,
   leshanActor: ActorRef) extends Actor {
 
+  implicit val ec: ExecutionContextExecutor = context.system.dispatcher
+
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   val hopsworksServer = HopsworksServer(host, port,
     hopsworksHostname, hopsworksPort,
-    leshanActor, self)
+    leshanActor, self, context)
 
   val hopsworksClient = HopsworksClient(hopsworksHostname, hopsworksPort, self)
 
@@ -34,11 +37,15 @@ class HopsworksServiceActor(
       hopsworksServer.start
     case DownloadGatewayCertificates(jwt, adminPassword, projectId) =>
       hopsworksClient.downloadCerts(jwt, adminPassword, projectId) onComplete {
-        case Success(res) => certs = Some(res)
-        case Failure(_) => certs = None
+        case Success(res) => {
+          certs = Some(res)
+          logger.debug("new certs: " + certs)
+        }
+        case Failure(ex) => {
+          certs = None
+          logger.error("error downloading certs: " + ex.getMessage)
+        }
       }
-      logger.debug("new certs: " + certs)
-
   }
 
 }

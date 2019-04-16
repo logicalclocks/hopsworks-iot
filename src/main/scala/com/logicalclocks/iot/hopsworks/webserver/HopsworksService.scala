@@ -20,6 +20,7 @@ import com.logicalclocks.iot.leshan.devices.IotDevice
 import spray.json._
 
 import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -29,6 +30,7 @@ trait HopsworksService {
   val hopsworksServiceActor: ActorRef
 
   implicit val timeout: Timeout = Timeout(5 seconds)
+  implicit val ec: ExecutionContext
 
   val route: Route =
     pathPrefix("gateway" / "nodes") {
@@ -43,10 +45,14 @@ trait HopsworksService {
   val getRootPathRoute: Route = (pathEndOrSingleSlash & get) {
     val configF: Future[LeshanConfig] = ask(leshanActor, GetLeshanConfig).mapTo[LeshanConfig]
     val blockedDevicesF: Future[Set[String]] = ask(leshanActor, GetBlockedEndpoints).mapTo[Set[String]]
-    val config: LeshanConfig = Await.result(configF, timeout.duration)
-    val blockedDevices: Set[String] = Await.result(blockedDevicesF, timeout.duration)
-    val status = IotGatewayStatus(config, blockedDevices)
-    completeJson(status.toJson)
+    val connectedDevicesF: Future[Set[IotDevice]] = ask(leshanActor, GetConnectedDevices).mapTo[Set[IotDevice]]
+    val statusF: Future[IotGatewayStatus] = for {
+      config <- configF
+      blockedDevices <- blockedDevicesF
+      connectedDevices <- connectedDevicesF
+    } yield IotGatewayStatus(config, blockedDevices, connectedDevices.size)
+    val res = Await.result(statusF, timeout.duration)
+    completeJson(res.toJson)
   }
 
   val getNodesRoute: Route = (pathEnd & get) {
@@ -80,4 +86,4 @@ trait HopsworksService {
 
 }
 
-case class IotGatewayStatus(config: LeshanConfig, blockedDevicesEndpoints: Set[String])
+case class IotGatewayStatus(config: LeshanConfig, blockedDevicesEndpoints: Set[String], connectedDevices: Integer)

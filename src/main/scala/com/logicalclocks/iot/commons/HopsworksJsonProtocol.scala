@@ -18,7 +18,7 @@ object HopsworksJsonProtocol extends DefaultJsonProtocol {
     def write(obj: IotDevice): JsValue =
       JsObject(
         "endpoint" -> JsString(obj.endpoint),
-        "ip-address" -> JsString(obj.reg.getAddress.getHostAddress),
+        "hostname" -> JsString(obj.reg.getAddress.getHostAddress),
         "port" -> JsNumber(obj.reg.getPort))
 
     def read(json: JsValue): IotDevice = ???
@@ -29,11 +29,12 @@ object HopsworksJsonProtocol extends DefaultJsonProtocol {
   implicit object IotGatewayStatusFormat extends RootJsonFormat[IotGatewayStatus] {
     def write(obj: IotGatewayStatus): JsValue =
       JsObject(
-        "blockedDevices" -> JsArray(obj.blockedDevicesEndpoints.toVector.map(_.toJson)),
+        "blockedDevicesEndpoints" -> JsArray(obj.blockedDevicesEndpoints.toVector.map(_.toJson)),
         "coapHost" -> JsString(obj.config.coapHost),
         "coapPort" -> JsNumber(obj.config.coapPort),
         "coapsHost" -> JsString(obj.config.coapsHost),
-        "coapsPort" -> JsNumber(obj.config.coapsPort))
+        "coapsPort" -> JsNumber(obj.config.coapsPort),
+        "connectedDevices" -> JsNumber(obj.connectedDevices))
     def read(json: JsValue): IotGatewayStatus = ???
   }
 

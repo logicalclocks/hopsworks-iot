@@ -9,12 +9,15 @@ import org.eclipse.leshan.LwM2m
 import org.scalatest.Matchers
 import org.scalatest.WordSpec
 
+import scala.concurrent.ExecutionContext
+
 class HopsworksServiceSpec extends WordSpec
   with Matchers
   with ScalatestRouteTest
   with HopsworksService {
 
   val actorSystem: ActorSystem = ActorSystem("iotGateway__Test")
+  val ec: ExecutionContext = actorSystem.dispatcher
   val leshanConfig: LeshanConfig = LeshanConfig(
     "localhost",
     LwM2m.DEFAULT_COAP_SECURE_PORT,
@@ -32,7 +35,7 @@ class HopsworksServiceSpec extends WordSpec
     "return a JSON with LeshanConfig for GET requests to /gateway" in {
       Get("/gateway") ~> route ~> check {
         responseAs[String] shouldEqual
-          """{"blockedDevices":[],"coapHost":"localhost","coapPort":5683,"coapsHost":"localhost","coapsPort":5684}"""
+          """{"blockedDevicesEndpoints":[],"coapHost":"localhost","coapPort":5683,"coapsHost":"localhost","coapsPort":5684,"connectedDevices":0}"""
       }
     }
 
