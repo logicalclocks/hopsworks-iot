@@ -19,7 +19,6 @@ lazy val logbackVersion = "1.1.2"
 lazy val scalaLoggingVersion = "3.9.2"
 lazy val scalaTestVersion = "3.0.5"
 lazy val scoptVersion = "4.0.0-RC2"
-lazy val sprayJsonVersion = "1.3.5"
 lazy val avro4sVersion = "2.0.4"
 
 libraryDependencies ++= Seq(
@@ -29,9 +28,9 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.3",
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
+  "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
   "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
-  "io.spray" %%  "spray-json" % sprayJsonVersion,
   "org.apache.avro" % "avro" % avroVersion,
   "org.apache.kafka" % "kafka-clients" % kafkaVersion,
   "org.eclipse.leshan" % "leshan-server-cf" % leshanVersion,

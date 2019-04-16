@@ -9,22 +9,24 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.StandardRoute
 import akka.pattern.ask
 import akka.util.Timeout
-import com.logicalclocks.iot.leshan.LeshanActor.GetConnectedDevices
-import com.logicalclocks.iot.leshan.devices.IotDevice
-
-import scala.concurrent.Await
-import scala.concurrent.duration._
-import scala.concurrent.Future
-import spray.json._
 import com.logicalclocks.iot.commons.HopsworksJsonProtocol._
+import com.logicalclocks.iot.hopsworks.HopsworksServiceActor.DownloadGatewayCertificates
 import com.logicalclocks.iot.leshan.LeshanActor.BlockDeviceWithEndpoint
 import com.logicalclocks.iot.leshan.LeshanActor.GetBlockedEndpoints
+import com.logicalclocks.iot.leshan.LeshanActor.GetConnectedDevices
 import com.logicalclocks.iot.leshan.LeshanActor.GetLeshanConfig
 import com.logicalclocks.iot.leshan.LeshanConfig
+import com.logicalclocks.iot.leshan.devices.IotDevice
+import spray.json._
+
+import scala.concurrent.Await
+import scala.concurrent.Future
+import scala.concurrent.duration._
 
 trait HopsworksService {
 
-  implicit val leshanActor: ActorRef
+  val leshanActor: ActorRef
+  val hopsworksServiceActor: ActorRef
 
   implicit val timeout: Timeout = Timeout(5 seconds)
 
@@ -67,7 +69,10 @@ trait HopsworksService {
   }
 
   val postJwtRoute: Route = (path("jwt") & post) {
-    complete("/jwt")
+    formFields('jwt, 'projectId.as[Int]) { (jwt, projectId) =>
+      hopsworksServiceActor ! DownloadGatewayCertificates(jwt, "admin", projectId)
+      completeJson(Map("message" -> "ok").toJson)
+    }
   }
 
   private def completeJson(json: JsValue): StandardRoute =

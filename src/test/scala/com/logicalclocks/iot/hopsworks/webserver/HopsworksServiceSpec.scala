@@ -20,8 +20,9 @@ class HopsworksServiceSpec extends WordSpec
     LwM2m.DEFAULT_COAP_SECURE_PORT,
     "localhost",
     LwM2m.DEFAULT_COAP_PORT)
-  implicit val leshanActor: ActorRef =
+  val leshanActor: ActorRef =
     actorSystem.actorOf(LeshanActor.props(leshanConfig, null))
+  val hopsworksServiceActor: ActorRef = null
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()

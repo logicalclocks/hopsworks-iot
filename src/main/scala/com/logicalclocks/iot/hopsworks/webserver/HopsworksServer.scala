@@ -10,7 +10,12 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContextExecutor
 
-case class HopsworksServer(host: String, port: Int, leshanActor: ActorRef)
+case class HopsworksServer(host: String,
+  port: Int,
+  hopsworksHostname: String,
+  hopsworksPort: Int,
+  leshanActor: ActorRef,
+  hopsworksServiceActor: ActorRef)
   extends HopsworksService with Loggable {
 
   implicit val system: ActorSystem = ActorSystem()

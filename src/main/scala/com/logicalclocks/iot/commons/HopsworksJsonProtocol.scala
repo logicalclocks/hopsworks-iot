@@ -1,5 +1,6 @@
 package com.logicalclocks.iot.commons
 
+import com.logicalclocks.iot.hopsworks.GatewayCertsDTO
 import com.logicalclocks.iot.hopsworks.webserver.IotGatewayStatus
 import com.logicalclocks.iot.leshan.LeshanConfig
 import com.logicalclocks.iot.leshan.devices.IotDevice
@@ -34,5 +35,21 @@ object HopsworksJsonProtocol extends DefaultJsonProtocol {
         "coapsHost" -> JsString(obj.config.coapsHost),
         "coapsPort" -> JsNumber(obj.config.coapsPort))
     def read(json: JsValue): IotGatewayStatus = ???
+  }
+
+  implicit object GatewayCertsDTOFormat extends RootJsonFormat[GatewayCertsDTO] {
+    def write(obj: GatewayCertsDTO): JsValue = JsObject(
+      "type" -> JsString("gatewayCertsDTO"),
+      "fileExtension" -> JsString(obj.fileExtension),
+      "kStore" -> JsString(obj.kStore),
+      "tStore" -> JsString(obj.tStore),
+      "password" -> JsString(obj.password))
+
+    def read(json: JsValue): GatewayCertsDTO =
+      json.asJsObject.getFields("fileExtension", "kStore", "tStore", "password") match {
+        case Seq(JsString(fileExtension), JsString(kStore), JsString(tStore), JsString(password)) =>
+          GatewayCertsDTO(fileExtension, kStore, tStore, password)
+        case _ => throw DeserializationException("GatewayCertsDTO expected")
+      }
   }
 }
