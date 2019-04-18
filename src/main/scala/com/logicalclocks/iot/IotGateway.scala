@@ -61,7 +61,8 @@ object IotGateway extends App {
       12222,
       "localhost",
       8181,
-      leshanActor))
+      leshanActor,
+      producerActor))
 
   leshanActor ! StartServer
   hopsworksActor ! StartHopsworksServer

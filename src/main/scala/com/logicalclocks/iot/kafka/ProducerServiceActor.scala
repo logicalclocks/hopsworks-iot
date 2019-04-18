@@ -1,17 +1,16 @@
 package com.logicalclocks.iot.kafka
 
-import java.io.File
-
 import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Cancellable
 import akka.actor.Props
 import com.logicalclocks.iot.db.InMemoryBufferServiceActor.GetMeasurements
+import com.logicalclocks.iot.kafka.ProducerServiceActor.AddAvroSchema
 import com.logicalclocks.iot.kafka.ProducerServiceActor.PollDatabase
 import com.logicalclocks.iot.kafka.ProducerServiceActor.ReceiveMeasurements
+import com.logicalclocks.iot.kafka.ProducerServiceActor.ScheduleDatabasePoll
 import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
 import org.apache.avro.Schema
-import org.apache.avro.Schema.Parser
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -25,17 +24,9 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
 
   var pollingCancellable: Cancellable = _
 
-  var avroSchemas: Map[Int, Schema] = _
+  var avroSchemas: Map[Int, Schema] = Map.empty
 
   val kafkaProducer: HopsKafkaProducer = HopsKafkaProducer()
-
-  override def preStart(): Unit = {
-    //TODO: call Hopsworks for the latest schemas here
-    avroSchemas = loadAvroSchemasFromResource()
-    logger.debug("Loaded {} avro schemas", avroSchemas.size)
-    pollingCancellable = context.system.scheduler.schedule(1 second, 1 second, self, PollDatabase)
-    super.preStart()
-  }
 
   override def postStop(): Unit = {
     pollingCancellable.cancel()
@@ -51,23 +42,12 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
           kafkaProducer.sendIpsoObject(m, avroSchemas.get(m.objectId)))
       }
     case PollDatabase =>
-      dbActor ! GetMeasurements(self)
-  }
-
-  private def loadAvroSchemasFromResource(): Map[Int, Schema] = {
-    val path = getClass.getResource("/avro/lwm2m")
-    val folder = new File(path.getPath)
-    if (folder.exists && folder.isDirectory) {
-      folder
-        .listFiles
-        .toList
-        .map(new Parser().parse(_))
-        .map(s => s.getProp("objectId").toInt -> s)
-        .toMap
-    } else {
-      logger.warn("Loaded 0 avro schemas")
-      Map.empty
-    }
+      dbActor ! GetMeasurements
+    case AddAvroSchema(objectId, schema) =>
+      avroSchemas = avroSchemas + (objectId -> schema)
+      logger.debug("Added schema for object {}. Currently schemas = {}", objectId, avroSchemas.size)
+    case ScheduleDatabasePoll =>
+      pollingCancellable = context.system.scheduler.schedule(1 second, 1 second, self, PollDatabase)
   }
 }
 
@@ -77,5 +57,9 @@ object ProducerServiceActor {
 
   final object PollDatabase
 
+  final object ScheduleDatabasePoll
+
   final case class ReceiveMeasurements(list: Iterable[IpsoObjectMeasurement])
+
+  final case class AddAvroSchema(objectId: Int, schema: Schema)
 }

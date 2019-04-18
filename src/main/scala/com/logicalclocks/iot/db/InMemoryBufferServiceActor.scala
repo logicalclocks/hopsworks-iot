@@ -1,7 +1,6 @@
 package com.logicalclocks.iot.db
 
 import akka.actor.Actor
-import akka.actor.ActorRef
 import akka.actor.Props
 import com.logicalclocks.iot.db.InMemoryBufferServiceActor.AddMeasurementsToDatabase
 import com.logicalclocks.iot.db.InMemoryBufferServiceActor.GetMeasurements
@@ -21,8 +20,8 @@ class InMemoryBufferServiceActor() extends Actor {
     case AddMeasurementsToDatabase(measurements) =>
       logger.debug("DB add: {}", measurements)
       measurementsBuffer = measurementsBuffer ::: measurements.toList
-    case GetMeasurements(actor) =>
-      actor ! ReceiveMeasurements(measurementsBuffer)
+    case GetMeasurements =>
+      sender ! ReceiveMeasurements(measurementsBuffer)
       measurementsBuffer = List.empty
     case UpdateDeviceBlockStatus(endpoint, block) =>
       if (block) {
@@ -38,7 +37,7 @@ object InMemoryBufferServiceActor {
 
   final case class AddMeasurementsToDatabase(measurements: Iterable[IpsoObjectMeasurement])
 
-  final case class GetMeasurements(actor: ActorRef)
+  final object GetMeasurements
 
   final case class UpdateDeviceBlockStatus(endpoint: String, block: Boolean)
 }

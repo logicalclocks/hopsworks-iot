@@ -16,6 +16,14 @@ case class TempIpsoObjectMeasurement(
   endpointClientName: String,
   instanceId: Int,
   ipsoObject: TempIpsoObject) extends IpsoObjectMeasurement {
-  val objectId: Int = 3303
+  override val objectId: Int = 3303
 }
 
+@AvroProp("objectId", " 3302")
+case class PresenceIpsoObjectMeasurement(
+  timestamp: Long,
+  endpointClientName: String,
+  instanceId: Int,
+  ipsoObject: PresenceIpsoObject) extends IpsoObjectMeasurement {
+  override val objectId: Int = 3302
+}

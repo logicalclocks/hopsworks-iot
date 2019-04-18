@@ -1,9 +1,11 @@
 package com.logicalclocks.iot.commons
 
 import com.logicalclocks.iot.hopsworks.GatewayCertsDTO
+import com.logicalclocks.iot.hopsworks.SchemaDTO
 import com.logicalclocks.iot.hopsworks.webserver.IotGatewayStatus
 import com.logicalclocks.iot.leshan.LeshanConfig
 import com.logicalclocks.iot.leshan.devices.IotDevice
+import org.apache.avro.Schema
 import spray.json._
 import spray.json.DefaultJsonProtocol
 import spray.json.JsArray
@@ -52,5 +54,15 @@ object HopsworksJsonProtocol extends DefaultJsonProtocol {
           GatewayCertsDTO(fileExtension, kStore, tStore, password)
         case _ => throw DeserializationException("GatewayCertsDTO expected")
       }
+  }
+
+  implicit object SchemaDTOFormat extends RootJsonFormat[SchemaDTO] {
+    def read(json: JsValue): SchemaDTO =
+      json.asJsObject.getFields("contents", "version") match {
+        case Seq(JsString(schemaJson), JsNumber(version)) =>
+          SchemaDTO(new Schema.Parser().parse(schemaJson), version.intValue)
+      }
+
+    def write(obj: SchemaDTO): JsValue = ???
   }
 }
