@@ -21,14 +21,14 @@ import com.typesafe.sslconfig.akka.AkkaSSLConfig
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
 
-case class HopsworksClient(hopsworksHostname: String, hopsworksPort: Integer, hopsworksServiceActor: ActorRef) {
+case class HopsworksClient(hopsworksHostname: String, hopsworksPort: Int, hopsworksServiceActor: ActorRef) {
 
   implicit val system: ActorSystem = ActorSystem()
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   implicit val ec: ExecutionContextExecutor = system.dispatcher
 
-  def downloadCerts(jwt: String, adminPassword: String, projectId: Integer): Future[GatewayCertsDTO] = {
+  def downloadCerts(jwt: String, adminPassword: String, projectId: Int): Future[GatewayCertsDTO] = {
     val badSslConfig = AkkaSSLConfig().mapSettings(s => s.withLoose(s.loose.withDisableHostnameVerification(true)))
     val badCtx = Http().createClientHttpsContext(badSslConfig)
     val connectionFlow: Flow[HttpRequest, HttpResponse, Future[Http.OutgoingConnection]] =

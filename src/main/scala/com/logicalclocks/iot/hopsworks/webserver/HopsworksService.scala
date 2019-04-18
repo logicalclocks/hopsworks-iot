@@ -86,4 +86,4 @@ trait HopsworksService {
 
 }
 
-case class IotGatewayStatus(config: LeshanConfig, blockedDevicesEndpoints: Set[String], connectedDevices: Integer)
+case class IotGatewayStatus(config: LeshanConfig, blockedDevicesEndpoints: Set[String], connectedDevices: Int)

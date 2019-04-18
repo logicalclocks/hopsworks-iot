@@ -61,5 +61,5 @@ object HopsworksServiceActor {
 
   final object StartHopsworksServer
 
-  final case class DownloadGatewayCertificates(jwt: String, adminPassword: String, projectId: Integer)
+  final case class DownloadGatewayCertificates(jwt: String, adminPassword: String, projectId: Int)
 }

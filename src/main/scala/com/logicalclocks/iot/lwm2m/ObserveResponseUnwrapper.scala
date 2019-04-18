@@ -29,10 +29,10 @@ case class ObserveResponseUnwrapper(
     }
 
   private def extractTempFromInstance(instance: LwM2mObjectInstance): Option[IpsoObjectMeasurement] = {
-    val resources: Map[Integer, AnyRef] = instance
+    val resources: Map[Int, AnyRef] = instance
       .getResources
       .asScala
-      .mapValues(_.getValue)
+      .map { case (k, v) => (k.intValue, v.getValue) }
 
     def tempIpsoObject: TempIpsoObject = TempIpsoObject(
       resources(5700).asInstanceOf[Double],
