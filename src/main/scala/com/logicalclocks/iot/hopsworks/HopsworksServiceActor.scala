@@ -10,6 +10,7 @@ import com.logicalclocks.iot.hopsworks.webserver.HopsworksServer
 import com.logicalclocks.iot.kafka.LwM2mTopics
 import com.logicalclocks.iot.kafka.ProducerServiceActor.AddAvroSchema
 import com.logicalclocks.iot.kafka.ProducerServiceActor.ScheduleDatabasePoll
+import com.logicalclocks.iot.kafka.ProducerServiceActor.UpdateCerts
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -35,7 +36,7 @@ class HopsworksServiceActor(
 
   val hopsworksClient = HopsworksClient(hopsworksHostname, hopsworksPort, self)
 
-  var certs: Option[GatewayCertsDTO] = None
+  val fileWriter: HopsFileWriter = HopsFileWriter()
 
   def receive: Receive = {
     case StartHopsworksServer =>
@@ -43,12 +44,10 @@ class HopsworksServiceActor(
     case DownloadGatewayCertificates(jwt, adminPassword, projectId) =>
       hopsworksClient.downloadCerts(jwt, adminPassword, projectId) onComplete {
         case Success(res) => {
-          certs = Some(res)
-          logger.debug("new certs: " + certs)
+          producerServiceActor ! UpdateCerts(res)
           self ! DownloadKafkaTopicSchemas(jwt, projectId)
         }
         case Failure(ex) => {
-          certs = None
           logger.error("error downloading certs: " + ex.getMessage)
         }
       }

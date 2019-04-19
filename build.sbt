@@ -10,8 +10,11 @@ addCommandAlias("testc", ";clean;coverage;test;coverageReport")
 
 lazy val akkaVersion = "2.5.21"
 lazy val akkaHttpVersion = "10.1.8"
+lazy val avro4sVersion = "2.0.4"
 lazy val avroVersion = "1.8.2"
-lazy val catsVersion = "1.6.0"
+lazy val catsCoreVersion = "1.6.0"
+lazy val catsEffectVersion = "1.2.0"
+lazy val commonsNetVersion = "3.1"
 lazy val jettyVersion = "9.4.15.v20190215"
 lazy val kafkaVersion = "1.1.0"
 lazy val leshanVersion = "1.0.0-M10"
@@ -19,7 +22,6 @@ lazy val logbackVersion = "1.1.2"
 lazy val scalaLoggingVersion = "3.9.2"
 lazy val scalaTestVersion = "3.0.5"
 lazy val scoptVersion = "4.0.0-RC2"
-lazy val avro4sVersion = "2.0.4"
 
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % logbackVersion,
@@ -37,7 +39,9 @@ libraryDependencies ++= Seq(
   "org.eclipse.leshan" % "leshan-server-demo" % leshanVersion,
   "org.eclipse.jetty" % "jetty-webapp" % jettyVersion,
   "org.eclipse.jetty" % "jetty-continuation" % jettyVersion,
-  "org.typelevel" %% "cats-core" % catsVersion
+  "org.typelevel" %% "cats-core" % catsCoreVersion,
+  "org.typelevel" %% "cats-effect" % catsEffectVersion,
+  "commons-net" % "commons-net" % commonsNetVersion
 )
 
 libraryDependencies ++= Seq(
