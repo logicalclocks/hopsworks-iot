@@ -29,17 +29,16 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
 
   var avroSchemas: Map[Int, Schema] = Map.empty
 
-  val kafkaProducer: HopsKafkaProducer = HopsKafkaProducer()
+  var kafkaProducer: Option[HopsKafkaProducer] = None
 
-  var kPath: Option[String] = None
-  var tPath: Option[String] = None
+  var currentCerts: Option[Certs] = None
 
   val fileWriter = HopsFileWriter()
 
   override def postStop(): Unit = {
     logger.debug("postStop")
     pollingCancellable.cancel()
-    kafkaProducer.close()
+    kafkaProducer.foreach(_.close())
     val removed = fileWriter.cleanUp()
     logger.debug("Cleaned up files: " + removed)
   }
@@ -49,7 +48,7 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
       if (measurements.nonEmpty) {
         logger.debug("PollDatabase: {}", measurements)
         measurements.foreach(m =>
-          kafkaProducer.sendIpsoObject(m, avroSchemas.get(m.objectId)))
+          kafkaProducer.foreach(_.sendIpsoObject(m, avroSchemas.get(m.objectId))))
       }
     case PollDatabase =>
       dbActor ! GetMeasurements
@@ -59,9 +58,9 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
     case ScheduleDatabasePoll =>
       pollingCancellable = context.system.scheduler.schedule(1 second, 1 second, self, PollDatabase)
     case UpdateCerts(certs) =>
-      val paths = fileWriter.saveCertsToFiles(certs).unsafeRunSync()
-      kPath = Some(paths._1)
-      tPath = Some(paths._2)
+      val (kPath, tPath) = fileWriter.saveCertsToFiles(certs).unsafeRunSync()
+      currentCerts = Some(Certs(kPath, tPath, certs.password))
+      kafkaProducer = Some(HopsKafkaProducer(kPath, tPath, certs.password))
   }
 }
 
@@ -79,3 +78,5 @@ object ProducerServiceActor {
 
   final case class UpdateCerts(certsDTO: GatewayCertsDTO)
 }
+
+sealed case class Certs(kPath: String, tPath: String, pass: String)

@@ -14,6 +14,7 @@ import org.apache.avro.io.EncoderFactory
 import org.apache.avro.specific.SpecificDatumWriter
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.config.SslConfigs
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -21,14 +22,22 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-case class HopsKafkaProducer() {
+case class HopsKafkaProducer(kStorePath: String, tStorePath: String, pass: String) {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  private val props: Properties = PropertiesReader()
-    .addResource("hops-kafka-producer.conf", "kafka")
-    .addResource("hops-kafka-ssl.conf", "kafka")
-    .props
+  private val props: Properties = {
+    val p = PropertiesReader()
+      .addResource("hops-kafka-producer.conf", "kafka")
+      .props
+    p.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, tStorePath)
+    p.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, kStorePath)
+    p.put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, pass)
+    p.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, pass)
+    p.put(SslConfigs.SSL_KEY_PASSWORD_CONFIG, pass)
+    p.put(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, "")
+    p
+  }
 
   private val producer = new KafkaProducer[String, Array[Byte]](props)
 
@@ -36,10 +45,13 @@ case class HopsKafkaProducer() {
     producer.close()
 
   def sendIpsoObject(obj: IpsoObjectMeasurement, schemaOption: Option[Schema]) = {
-    if (schemaOption.nonEmpty) {
+    val topic: Option[String] = LwM2mTopics.findNameByObjectId(obj.objectId)
+    if (topic.isEmpty) {
+      logger.error(s"Cannot find topic for objectId ${obj.objectId}.")
+    }else if (schemaOption.nonEmpty) {
       Try(getGenericRecord(obj, schemaOption.get))
         .map(serializeRecord(_, schemaOption.get))
-        .map(new ProducerRecord[String, Array[Byte]]("TempMeasurementsTopic", obj.endpointClientName, _)) match {
+        .map(new ProducerRecord[String, Array[Byte]](topic.get, obj.endpointClientName, _)) match {
           case Success(s) => producer.send(s)
           case Failure(f) => logger.error("error trying to send to kafka: " + f)
         }
