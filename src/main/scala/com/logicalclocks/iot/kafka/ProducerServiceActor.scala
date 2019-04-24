@@ -36,7 +36,6 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
   val fileWriter = HopsFileWriter()
 
   override def postStop(): Unit = {
-    logger.debug("postStop")
     pollingCancellable.cancel()
     kafkaProducer.foreach(_.close())
     val removed = fileWriter.cleanUp()

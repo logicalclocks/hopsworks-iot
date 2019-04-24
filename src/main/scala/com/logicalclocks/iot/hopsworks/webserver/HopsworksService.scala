@@ -35,7 +35,8 @@ trait HopsworksService {
   val route: Route =
     pathPrefix("gateway" / "nodes") {
       getNodesRoute ~
-        postIgnoreNodesRoute
+        postBlockNodeRoute ~
+        deleteBlockNodeRoute
     } ~
       pathPrefix("gateway") {
         postJwtRoute ~
@@ -43,13 +44,10 @@ trait HopsworksService {
       }
 
   val getRootPathRoute: Route = (pathEndOrSingleSlash & get) {
-    val configF: Future[LeshanConfig] = ask(leshanActor, GetLeshanConfig).mapTo[LeshanConfig]
-    val blockedDevicesF: Future[Set[String]] = ask(leshanActor, GetBlockedEndpoints).mapTo[Set[String]]
-    val connectedDevicesF: Future[Set[IotDevice]] = ask(leshanActor, GetConnectedDevices).mapTo[Set[IotDevice]]
     val statusF: Future[IotGatewayStatus] = for {
-      config <- configF
-      blockedDevices <- blockedDevicesF
-      connectedDevices <- connectedDevicesF
+      config           <- ask(leshanActor, GetLeshanConfig).mapTo[LeshanConfig]
+      blockedDevices   <- ask(leshanActor, GetBlockedEndpoints).mapTo[Set[String]]
+      connectedDevices <- ask(leshanActor, GetConnectedDevices).mapTo[Set[IotDevice]]
     } yield IotGatewayStatus(config, blockedDevices, connectedDevices.size)
     val res = Await.result(statusF, timeout.duration)
     completeJson(res.toJson)
@@ -62,15 +60,23 @@ trait HopsworksService {
     completeJson(json)
   }
 
-  val postIgnoreNodesRoute: Route = (path(Segment / "ignored") & post) {
+  val postBlockNodeRoute: Route = (path(Segment / "blocked") & post) {
     endpoint =>
       {
-        parameters('block.as[Boolean]) { block =>
-          val statusF: Future[Boolean] = ask(leshanActor, BlockDeviceWithEndpoint(endpoint, block)).mapTo[Boolean]
-          val status: Boolean = Await.result(statusF, timeout.duration)
-          val statusM = Map("status" -> status).toJson
-          completeJson(statusM)
-        }
+        val statusF: Future[Boolean] = ask(leshanActor, BlockDeviceWithEndpoint(endpoint, true)).mapTo[Boolean]
+        val status: Boolean = Await.result(statusF, timeout.duration)
+        val statusM = Map("status" -> status).toJson
+        completeJson(statusM)
+      }
+  }
+
+  val deleteBlockNodeRoute: Route = (path(Segment / "blocked") & delete) {
+    endpoint =>
+      {
+        val statusF: Future[Boolean] = ask(leshanActor, BlockDeviceWithEndpoint(endpoint, false)).mapTo[Boolean]
+        val status: Boolean = Await.result(statusF, timeout.duration)
+        val statusM = Map("status" -> status).toJson
+        completeJson(statusM)
       }
   }
 

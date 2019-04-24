@@ -26,7 +26,7 @@ case class HopsFileWriter() {
     } yield (kPath, tPath)
 
   def cleanUp(): Boolean =
-    new Directory(folderFile).deleteRecursively()
+    new Directory(folderFile).deleteRecursively() && folderFile.delete()
 
   private def saveCertStringToFile(encodedString: String, fileName: String, fileExtension: String): IO[String] =
     for {

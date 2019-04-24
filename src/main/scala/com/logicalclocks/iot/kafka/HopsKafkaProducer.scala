@@ -48,7 +48,7 @@ case class HopsKafkaProducer(kStorePath: String, tStorePath: String, pass: Strin
     val topic: Option[String] = LwM2mTopics.findNameByObjectId(obj.objectId)
     if (topic.isEmpty) {
       logger.error(s"Cannot find topic for objectId ${obj.objectId}.")
-    }else if (schemaOption.nonEmpty) {
+    } else if (schemaOption.nonEmpty) {
       Try(getGenericRecord(obj, schemaOption.get))
         .map(serializeRecord(_, schemaOption.get))
         .map(new ProducerRecord[String, Array[Byte]](topic.get, obj.endpointClientName, _)) match {
