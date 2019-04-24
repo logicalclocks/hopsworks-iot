@@ -17,7 +17,9 @@ case class HopsFileWriter() {
 
   private val logger: Logger = LoggerFactory.getLogger(getClass)
   private val folderFile = new File(folder)
-  folderFile.mkdirs()
+
+  def createFolder(): IO[Boolean] =
+    IO.pure(folderFile.mkdirs())
 
   def saveCertsToFiles(certsDTO: GatewayCertsDTO): IO[(String, String)] =
     for {
@@ -25,8 +27,8 @@ case class HopsFileWriter() {
       tPath <- saveCertStringToFile(certsDTO.tStore, "truststore", certsDTO.fileExtension)
     } yield (kPath, tPath)
 
-  def cleanUp(): Boolean =
-    new Directory(folderFile).deleteRecursively() && folderFile.delete()
+  def cleanUp(): IO[Boolean] =
+    IO.pure(new Directory(folderFile).deleteRecursively() && folderFile.delete())
 
   private def saveCertStringToFile(encodedString: String, fileName: String, fileExtension: String): IO[String] =
     for {
