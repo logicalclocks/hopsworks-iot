@@ -11,12 +11,14 @@ import com.logicalclocks.iot.kafka.ProducerServiceActor.AddAvroSchema
 import com.logicalclocks.iot.kafka.ProducerServiceActor.PollDatabase
 import com.logicalclocks.iot.kafka.ProducerServiceActor.ReceiveMeasurements
 import com.logicalclocks.iot.kafka.ProducerServiceActor.ScheduleDatabasePoll
+import com.logicalclocks.iot.kafka.ProducerServiceActor.Stop
 import com.logicalclocks.iot.kafka.ProducerServiceActor.UpdateCerts
 import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
 import org.apache.avro.Schema
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 // TODO: this class is to be changed after implementing DatabaseService
@@ -65,6 +67,9 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
       val (kPath, tPath) = fileWriter.saveCertsToFiles(certs).unsafeRunSync()
       currentCerts = Some(Certs(kPath, tPath, certs.password))
       kafkaProducer = Some(HopsKafkaProducer(kPath, tPath, certs.password))
+    case Stop =>
+      implicit val executionContext: ExecutionContext = context.system.dispatcher
+      context.system.scheduler.scheduleOnce(Duration.Zero)(System.exit(1))
   }
 }
 
@@ -81,6 +86,8 @@ object ProducerServiceActor {
   final case class AddAvroSchema(objectId: Int, schema: Schema)
 
   final case class UpdateCerts(certsDTO: GatewayCertsDTO)
+
+  final object Stop
 }
 
 sealed case class Certs(kPath: String, tPath: String, pass: String)
