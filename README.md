@@ -10,17 +10,20 @@ Hopsworks development branch: [iot-thesis](https://github.com/kai-chi/hopsworks/
 ## long story short
 Any IoT device talking LWM2M can connect to an IoT Gateway using Raw Public Keys. The data collected by the gateway is be passed to Kafka broker and processed with Spark Streaming jobs. The data is visualised in Grafana and stored in Hops-FS (Hadoop)
 
+## installation
+soon...
+
 ## timeline
 
-- [x] Milestone 1 - IoT  
-- [x] Milestone 2 - Kafka Producer   
-- [ ] Milestone 3 - Hopsworks API, Gateway API   
-- [ ] Milestone 4 - DatabaseService   
-- [ ] Milestone 4.5 - Front-end  
-- [ ] Milestone 5 - Streaming jobs  
-- [ ] Milestone 6 - Testing & benchmarking  
-- [ ] Milestone 7 - Visualisation & storage  
-- [ ] Milestone 8 - Defending the thesis  
+- [x] Milestone 1 - IoT<br/>
+- [x] Milestone 2 - Kafka Producer<br/>
+- [x] Milestone 3 - APIs<br/>
+- [ ] Milestone 4 - DatabaseService<br/>
+- [ ] Milestone 4.5 - Front-end<br/>
+- [ ] Milestone 5 - Streaming jobs<br/>
+- [ ] Milestone 6 - Testing & benchmarking<br/>
+- [ ] Milestone 7 - Visualisation & storage<br/>
+- [ ] Milestone 8 - Defending the thesis<br/>
 
 
 ## contributions
