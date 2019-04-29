@@ -37,7 +37,6 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
 
   val fileWriter = HopsFileWriter()
 
-
   override def preStart(): Unit = {
     fileWriter.createFolder().unsafeRunSync()
   }

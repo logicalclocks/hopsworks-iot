@@ -45,8 +45,8 @@ trait HopsworksService {
 
   val getRootPathRoute: Route = (pathEndOrSingleSlash & get) {
     val statusF: Future[IotGatewayStatus] = for {
-      config           <- ask(leshanActor, GetLeshanConfig).mapTo[LeshanConfig]
-      blockedDevices   <- ask(leshanActor, GetBlockedEndpoints).mapTo[Set[String]]
+      config <- ask(leshanActor, GetLeshanConfig).mapTo[LeshanConfig]
+      blockedDevices <- ask(leshanActor, GetBlockedEndpoints).mapTo[Set[String]]
       connectedDevices <- ask(leshanActor, GetConnectedDevices).mapTo[Set[IotDevice]]
     } yield IotGatewayStatus(config, blockedDevices, connectedDevices.size)
     val res = Await.result(statusF, timeout.duration)

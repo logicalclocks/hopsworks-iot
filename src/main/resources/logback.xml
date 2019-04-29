@@ -5,16 +5,9 @@
         </encoder>
     </appender>
 
-    <!--&lt;!&ndash;<appender name="FILE" class="ch.qos.logback.core.FileAppender">&ndash;&gt;-->
-        <!--&lt;!&ndash;&lt;!&ndash; path to your log file, where you want to store logs &ndash;&gt;&ndash;&gt;-->
-        <!--&lt;!&ndash;<file>/Users/yourusername/test.log</file>&ndash;&gt;-->
-        <!--&lt;!&ndash;<append>false</append>&ndash;&gt;-->
-        <!--&lt;!&ndash;<encoder>&ndash;&gt;-->
-            <!--&lt;!&ndash;<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>&ndash;&gt;-->
-        <!--&lt;!&ndash;</encoder>&ndash;&gt;-->
-    <!--&lt;!&ndash;</appender>&ndash;&gt;-->
+    <logger name="com.typesafe.slick" level="INFO"/>
 
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="STDOUT" />
         <!--<appender-ref ref="FILE" />-->
     </root>
