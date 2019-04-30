@@ -27,3 +27,12 @@ case class PresenceIpsoObjectMeasurement(
   ipsoObject: PresenceIpsoObject) extends IpsoObjectMeasurement {
   override val objectId: Int = 3302
 }
+
+// for unit-testing purposes
+case class GenericIpsoObjectMeasurement(
+  timestamp: Long,
+  endpointClientName: String,
+  instanceId: Int,
+  objectId: Int,
+  ipsoObject: IpsoObject) extends IpsoObjectMeasurement
+

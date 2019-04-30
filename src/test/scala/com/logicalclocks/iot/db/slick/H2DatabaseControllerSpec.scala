@@ -1,15 +1,17 @@
 package com.logicalclocks.iot.db.slick
 
+import com.logicalclocks.iot.lwm2m.GenericIpsoObjectMeasurement
 import com.logicalclocks.iot.lwm2m.TempIpsoObject
 import com.logicalclocks.iot.lwm2m.TempIpsoObjectMeasurement
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
+import org.scalatest.concurrent.ScalaFutures
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-import slick.jdbc.H2Profile.api._
 
 class H2DatabaseControllerSpec extends FunSuite with Matchers with BeforeAndAfterAll {
 
@@ -42,15 +44,40 @@ class H2DatabaseControllerSpec extends FunSuite with Matchers with BeforeAndAfte
   }
 
   test("adding and getting one element should return the element") {
-    import DbTables._
-    val q = measurementsTQ.delete
-    val f = db.db.run(q) flatMap { _ =>
+    val f = db.clearTables flatMap { _ =>
       db.addSingleRecord(m1)
     } flatMap { _ =>
       db.getSingleRecord.value
     } map {
-      res => res.get shouldBe m1
+      res => res.get._2 shouldBe m1
     }
     Await.result(f, Duration.Inf)
+  }
+
+  test("adding and deleting a record should return an empty table") {
+    val f = db.clearTables flatMap { _ =>
+      db.addSingleRecord(m1)
+    } flatMap { _ =>
+      db.getTableSize
+    } flatMap { res =>
+      Future(res shouldBe 1)
+    } flatMap { _ =>
+      db.getSingleRecord.value
+    } flatMap { res =>
+      db.deleteSingleRecord(res.get._1)
+    } flatMap { res =>
+      Future(res shouldBe 1)
+    } flatMap { _ =>
+      db.getTableSize
+    } map (_ shouldBe 0)
+    Await.result(f, Duration.Inf)
+  }
+
+  test("adding an unknown object throws IllegalArgumentException") {
+    val o = GenericIpsoObjectMeasurement(0L, "", 0, 0, t1)
+    val f = db.addSingleRecord(o)
+    ScalaFutures.whenReady(f.failed) { e =>
+      e shouldBe a[IllegalArgumentException]
+    }
   }
 }

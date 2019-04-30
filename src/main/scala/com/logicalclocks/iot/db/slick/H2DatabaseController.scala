@@ -9,18 +9,19 @@ import com.logicalclocks.iot.lwm2m.TempIpsoObjectMeasurement
 import slick.jdbc.H2Profile.api._
 import slick.jdbc.meta.MTable
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
 import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.duration.Duration
 
 case class H2DatabaseController(path: String) extends HopsDbController {
-  val db = Database.forConfig(path)
+  import H2DatabaseController._
 
   def start: Future[Unit] = for {
     tables <- openDbSession()
-    if tables.isEmpty
-  } yield createDb()
+    _ <- if (tables.isEmpty) createDb()
+    else Future.successful(Unit)
+  } yield ()
 
   def stop: Future[Unit] =
     Future(db.close)
@@ -35,6 +36,7 @@ case class H2DatabaseController(path: String) extends HopsDbController {
     db.run(MTable.getTables)
   }
 
+  // $COVERAGE-OFF$
   @Deprecated
   def printContent() = {
     val action: Future[Unit] = {
@@ -63,6 +65,7 @@ case class H2DatabaseController(path: String) extends HopsDbController {
     }
     Await.result(action, Duration.Inf)
   }
+  // $COVERAGE-ON$
 
   private def addMeasurement(obj: IpsoObjectMeasurement): Future[Int] = {
     val insertMeasurementQuery = measurementsTQ returning measurementsTQ.map(_.id) into ((row, id) => row.copy(id = id))
@@ -85,14 +88,6 @@ case class H2DatabaseController(path: String) extends HopsDbController {
     OptionT(db.run(q))
   }
 
-  private def getIpsoObject(m: IpsoObjectMeasurementRow): OptionT[Future, TempIpsoObjectRow] /*Future[Option[IpsoObjectRow]] */ = m.objectId match {
-    case 3303 => {
-      val q = tempMeasurementsTQ.filter(table => table.measurementId === m.id)
-      val action = q.result.headOption
-      OptionT(db.run(action))
-    }
-  }
-
   private def joinIpsoObject(m: IpsoObjectMeasurementRow): OptionT[Future, (IpsoObjectMeasurementRow, IpsoObjectRow)] = m.objectId match {
     case 3303 => {
       val a = for {
@@ -113,11 +108,11 @@ case class H2DatabaseController(path: String) extends HopsDbController {
     }
   }
 
-  override def getSingleRecord: OptionT[Future, IpsoObjectMeasurement] =
+  override def getSingleRecord: OptionT[Future, DbSingleRecord] =
     for {
       m1 <- getTopMeasurement
       (m, t) <- joinIpsoObject(m1)
-    } yield createIpsoObjectMeasurement(m, t)
+    } yield (m.id, createIpsoObjectMeasurement(m, t))
 
   override def getBatchOfRecords(batchSize: Int): OptionT[Future, List[IpsoObjectMeasurement]] = ???
 
@@ -132,12 +127,18 @@ case class H2DatabaseController(path: String) extends HopsDbController {
       addMeasurement(measurement).flatMap(mId =>
         addTempIpsoObject(mId, measurement.ipsoObject.asInstanceOf[TempIpsoObject]))
     case _ =>
-      throw new Error(s"Unknown objectId ${measurement.objectId}")
+      Future.failed(new IllegalArgumentException(s"Unknown objectId ${measurement.objectId}"))
   }
 
   override def addBatchOfRecords(measurements: List[IpsoObjectMeasurement]): Future[Int] = ???
+
+  def clearTables: Future[Int] =
+    db.run(measurementsTQ.delete)
+
+  def getTableSize: Future[Int] =
+    db.run(measurementsTQ.length.result)
 }
 
-//object H2DatabaseController {
-//  private val db = Database.forConfig("h2hopsworks")
-//}
+object H2DatabaseController {
+  private val db = Database.forConfig("h2hopsworks")
+}

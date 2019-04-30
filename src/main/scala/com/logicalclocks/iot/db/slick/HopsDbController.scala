@@ -7,6 +7,8 @@ import scala.concurrent.Future
 
 trait HopsDbController {
 
+  type DbSingleRecord = (Int, IpsoObjectMeasurement)
+
   def start: Future[Unit]
 
   def stop: Future[Unit]
@@ -15,7 +17,7 @@ trait HopsDbController {
 
   def addBatchOfRecords(measurements: List[IpsoObjectMeasurement]): Future[Int]
 
-  def getSingleRecord: OptionT[Future, IpsoObjectMeasurement]
+  def getSingleRecord: OptionT[Future, DbSingleRecord]
 
   def getBatchOfRecords(batchSize: Int): OptionT[Future, List[IpsoObjectMeasurement]]
 
