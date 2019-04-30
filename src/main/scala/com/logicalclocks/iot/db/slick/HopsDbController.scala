@@ -19,7 +19,7 @@ trait HopsDbController {
 
   def getSingleRecord: OptionT[Future, DbSingleRecord]
 
-  def getBatchOfRecords(batchSize: Int): OptionT[Future, List[IpsoObjectMeasurement]]
+  def getBatchOfRecords(batchSize: Int): Future[List[DbSingleRecord]]
 
   def deleteSingleRecord(measurementId: Int): Future[Int]
 

@@ -5,10 +5,13 @@
         </encoder>
     </appender>
 
-    <logger name="com.typesafe.slick" level="INFO"/>
+    <logger name="org.eclipse.leshan" level="INFO"/>
+    <logger name="org.eclipse.californium" level="INFO"/>
+    <logger name="org.apache.kafka" level="INFO"/>
+    <logger name="slick" level="INFO"/>
 
-    <root level="info">
+
+    <root level="debug">
         <appender-ref ref="STDOUT" />
-        <!--<appender-ref ref="FILE" />-->
     </root>
 </configuration>

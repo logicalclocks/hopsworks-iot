@@ -3,8 +3,8 @@ package com.logicalclocks.iot.leshan
 import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Props
-import com.logicalclocks.iot.db.InMemoryBufferServiceActor.AddMeasurementsToDatabase
-import com.logicalclocks.iot.db.InMemoryBufferServiceActor.UpdateDeviceBlockStatus
+import com.logicalclocks.iot.db.DatabaseServiceActor.AddMeasurementsToDatabase
+import com.logicalclocks.iot.db.DatabaseServiceActor.UpdateDeviceBlockStatus
 import com.logicalclocks.iot.leshan.LeshanActor.BlockDeviceWithEndpoint
 import com.logicalclocks.iot.leshan.LeshanActor.DisconnectDevice
 import com.logicalclocks.iot.leshan.LeshanActor.GetBlockedEndpoints

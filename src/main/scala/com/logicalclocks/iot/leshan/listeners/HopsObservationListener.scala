@@ -13,7 +13,7 @@ case class HopsObservationListener(leshanActor: ActorRef) extends ObservationLis
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def newObservation(observation: Observation, registration: Registration): Unit = {
-    logger.debug(s"New observation $observation for $registration")
+    logger.debug(s"New observation for ${registration.getEndpoint}")
   }
 
   def cancelled(observation: Observation): Unit = {

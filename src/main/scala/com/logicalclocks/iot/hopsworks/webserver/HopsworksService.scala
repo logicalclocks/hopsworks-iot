@@ -23,6 +23,7 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 trait HopsworksService {
 

@@ -73,6 +73,21 @@ class H2DatabaseControllerSpec extends FunSuite with Matchers with BeforeAndAfte
     Await.result(f, Duration.Inf)
   }
 
+  test("adding two elements and getting it back as a batch should return the same elements") {
+    val f = db.clearTables flatMap { _ =>
+      db.addSingleRecord(m1)
+    } flatMap { _ =>
+      db.addSingleRecord(m2)
+    } flatMap { _ =>
+      db.getBatchOfRecords(100)
+    } map { list =>
+      list.size shouldBe 2
+      val list2 = list.map(_._2)
+      list2.contains(m1) shouldBe true
+      list2.contains(m2) shouldBe true
+    }
+  }
+
   test("adding an unknown object throws IllegalArgumentException") {
     val o = GenericIpsoObjectMeasurement(0L, "", 0, 0, t1)
     val f = db.addSingleRecord(o)

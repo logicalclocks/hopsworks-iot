@@ -3,11 +3,12 @@ package com.logicalclocks.iot
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.actor.Terminated
-import com.logicalclocks.iot.db.InMemoryBufferServiceActor
+import com.logicalclocks.iot.db.DatabaseServiceActor
+import com.logicalclocks.iot.db.DatabaseServiceActor.StopDb
 import com.logicalclocks.iot.hopsworks.HopsworksServiceActor
 import com.logicalclocks.iot.hopsworks.HopsworksServiceActor.StartHopsworksServer
 import com.logicalclocks.iot.kafka.ProducerServiceActor
-import com.logicalclocks.iot.kafka.ProducerServiceActor.Stop
+import com.logicalclocks.iot.kafka.ProducerServiceActor.StopProducer
 import com.logicalclocks.iot.leshan.LeshanActor
 import com.logicalclocks.iot.leshan.LeshanActor.StartServer
 import com.logicalclocks.iot.leshan.LeshanConfig
@@ -53,7 +54,7 @@ object IotGateway extends App {
   }
 
   val dbActor: ActorRef =
-    system.actorOf(InMemoryBufferServiceActor.props())
+    system.actorOf(DatabaseServiceActor.props("h2hopsworks"))
 
   val producerActor: ActorRef =
     system.actorOf(ProducerServiceActor.props(dbActor))
@@ -74,8 +75,9 @@ object IotGateway extends App {
   hopsworksActor ! StartHopsworksServer
 
   Runtime.getRuntime.addShutdownHook(new Thread(() => {
+    producerActor ! StopProducer
+    dbActor ! StopDb
     val terminate: Future[Terminated] = system.terminate()
-    producerActor ! Stop
     Await.result(terminate, Duration("10 seconds"))
   }))
 

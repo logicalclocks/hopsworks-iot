@@ -10,7 +10,9 @@ mainClass in assembly := Some("com.logicalclocks.iot.IotGateway")
 
 addCommandAlias("testc", ";clean;coverage;test;coverageReport")
 
-scalacOptions += "-deprecation"
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-feature")
 
 parallelExecution in Test := false
 
@@ -27,6 +29,7 @@ lazy val avroVersion = "1.8.2"
 lazy val catsCoreVersion = "1.6.0"
 lazy val catsEffectVersion = "1.2.0"
 lazy val commonsNetVersion = "3.1"
+lazy val h2Version = "1.4.199"
 lazy val jettyVersion = "9.4.15.v20190215"
 lazy val junitInterfaceVersion = "0.11"
 lazy val kafkaVersion = "1.1.0"
@@ -36,7 +39,7 @@ lazy val neo4jVersion = "3.5.4"
 lazy val scalaLoggingVersion = "3.9.2"
 lazy val scalaTestVersion = "3.0.5"
 lazy val scoptVersion = "4.0.0-RC2"
-lazy val slf4jNopVeresion = "1.6.4"
+lazy val slickHickariCpVersion = "3.3.0"
 lazy val slickVersion = "3.3.0"
 lazy val slickTestKitVersion = "3.2.3"
 lazy val typesafeConfigVersion = "1.3.3"
@@ -44,7 +47,7 @@ lazy val typesafeConfigVersion = "1.3.3"
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % logbackVersion,
   "com.github.scopt" %% "scopt" % scoptVersion,
-  "com.h2database" % "h2" % "1.4.199",
+  "com.h2database" % "h2" % h2Version,
   "com.sksamuel.avro4s" %% "avro4s-kafka" % avro4sVersion,
   "com.typesafe" % "config" % typesafeConfigVersion,
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
@@ -64,8 +67,7 @@ libraryDependencies ++= Seq(
   "commons-net" % "commons-net" % commonsNetVersion,
 
   "com.typesafe.slick" %% "slick" % slickVersion,
-  "org.slf4j" % "slf4j-nop" % slf4jNopVeresion,
-  "com.typesafe.slick" %% "slick-hikaricp" % "3.3.0"
+  "com.typesafe.slick" %% "slick-hikaricp" % slickHickariCpVersion
 )
 
 libraryDependencies ++= Seq(
