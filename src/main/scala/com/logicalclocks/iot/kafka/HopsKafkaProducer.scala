@@ -3,7 +3,9 @@ package com.logicalclocks.iot.kafka
 import java.io.ByteArrayOutputStream
 import java.util.Properties
 
+import akka.actor.ActorRef
 import com.logicalclocks.iot.commons.PropertiesReader
+import com.logicalclocks.iot.db.DatabaseServiceActor.DeleteSingleRecord
 import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
 import com.logicalclocks.iot.lwm2m.TempIpsoObjectMeasurement
 import org.apache.avro.Schema
@@ -14,6 +16,7 @@ import org.apache.avro.io.EncoderFactory
 import org.apache.avro.specific.SpecificDatumWriter
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.config.SslConfigs
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -22,7 +25,7 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-case class HopsKafkaProducer(kStorePath: String, tStorePath: String, pass: String) {
+case class HopsKafkaProducer(kStorePath: String, tStorePath: String, pass: String, dbActor: ActorRef) {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -44,7 +47,7 @@ case class HopsKafkaProducer(kStorePath: String, tStorePath: String, pass: Strin
   def close(): Unit =
     producer.close()
 
-  def sendIpsoObject(obj: IpsoObjectMeasurement, schemaOption: Option[Schema]) = {
+  def sendIpsoObject(dbId: Int, obj: IpsoObjectMeasurement, schemaOption: Option[Schema]) = {
     val topic: Option[String] = LwM2mTopics.findNameByObjectId(obj.objectId)
     if (topic.isEmpty) {
       logger.error(s"Cannot find topic for objectId ${obj.objectId}.")
@@ -52,8 +55,14 @@ case class HopsKafkaProducer(kStorePath: String, tStorePath: String, pass: Strin
       Try(getGenericRecord(obj, schemaOption.get))
         .map(serializeRecord(_, schemaOption.get))
         .map(new ProducerRecord[String, Array[Byte]](topic.get, obj.endpointClientName, _)) match {
-          case Success(s) => producer.send(s)
-          case Failure(f) => logger.error("error trying to send to kafka: " + f)
+          case Success(s) => producer.send(s, (_: RecordMetadata, ex: Exception) => {
+            if (ex == null) {
+              dbActor ! DeleteSingleRecord(dbId)
+            } else {
+              logger.error(s"Exception sending $dbId from Kafka: $ex")
+            }
+          })
+          case Failure(f) => logger.error("error trying to send to Kafka: " + f)
         }
     } else {
       logger.warn("No corresponding avro schema for received object of class" + obj.getClass)

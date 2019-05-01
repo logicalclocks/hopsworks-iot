@@ -2,12 +2,13 @@ package com.logicalclocks.iot.db
 
 import akka.actor.Actor
 import akka.actor.Props
+import akka.pattern.pipe
 import com.logicalclocks.iot.db.DatabaseServiceActor.AddMeasurementsToDatabase
+import com.logicalclocks.iot.db.DatabaseServiceActor.DeleteSingleRecord
 import com.logicalclocks.iot.db.DatabaseServiceActor.GetMeasurements
 import com.logicalclocks.iot.db.DatabaseServiceActor.StopDb
 import com.logicalclocks.iot.db.DatabaseServiceActor.UpdateDeviceBlockStatus
 import com.logicalclocks.iot.db.slick.H2DatabaseController
-import com.logicalclocks.iot.kafka.ProducerServiceActor.ReceiveMeasurements
 import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -43,15 +44,15 @@ class DatabaseServiceActor(dbConfig: String) extends Actor {
         case Failure(f) => logger.error(s"Error adding to db $f")
       }
     case GetMeasurements =>
-      val f = db.getBatchOfRecords(100)
-      val list = Await.result(f, Duration.Inf)
-      sender ! ReceiveMeasurements(list.map(_._2))
-      list.foreach { case (id, _) => db.deleteSingleRecord(id) }
+      db.getBatchOfRecords(100) pipeTo sender
     case UpdateDeviceBlockStatus(endpoint, block) =>
-      if (block) {
+      if (block)
         blockedDevicesEndpointsBuffer = blockedDevicesEndpointsBuffer + endpoint
-      } else {
+      else
         blockedDevicesEndpointsBuffer = blockedDevicesEndpointsBuffer - endpoint
+    case DeleteSingleRecord(id) =>
+      db.deleteSingleRecord(id) foreach { res =>
+        logger.debug(s"Result deleting object $id: $res")
       }
     case StopDb =>
       context.system.scheduler.scheduleOnce(Duration.Zero)(System.exit(1))
@@ -68,6 +69,8 @@ object DatabaseServiceActor {
   final case class UpdateDeviceBlockStatus(endpoint: String, block: Boolean)
 
   final object StopDb
+
+  final case class DeleteSingleRecord(id: Int)
 
 }
 
