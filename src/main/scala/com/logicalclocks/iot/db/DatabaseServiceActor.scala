@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 import scala.util.Failure
 import scala.util.Success
@@ -27,8 +28,8 @@ class DatabaseServiceActor(dbConfig: String) extends Actor {
 
   implicit val executionContext: ExecutionContext = context.system.dispatcher
 
-  var measurementsBuffer: List[IpsoObjectMeasurement] = List.empty
   var blockedDevicesEndpointsBuffer: Set[String] = Set.empty
+  var measurementsNotACKed: Set[Int] = Set.empty
 
   override def postStop(): Unit = {
     logger.debug("Stop database")
@@ -44,7 +45,11 @@ class DatabaseServiceActor(dbConfig: String) extends Actor {
         case Failure(f) => logger.error(s"Error adding to db $f")
       }
     case GetMeasurements =>
-      db.getBatchOfRecords(100) pipeTo sender
+      db.getBatchOfRecords(measurementsNotACKed.size + 100) flatMap { list =>
+        val filtered = list.filter{tuple => !measurementsNotACKed.contains(tuple._1)}
+        measurementsNotACKed = measurementsNotACKed ++ filtered.map(_._1)
+        Future(filtered)
+      } pipeTo sender
     case UpdateDeviceBlockStatus(endpoint, block) =>
       if (block)
         blockedDevicesEndpointsBuffer = blockedDevicesEndpointsBuffer + endpoint
@@ -53,6 +58,8 @@ class DatabaseServiceActor(dbConfig: String) extends Actor {
     case DeleteSingleRecord(id) =>
       db.deleteSingleRecord(id) foreach { res =>
         logger.debug(s"Result deleting object $id: $res")
+        if (res == 1)
+          measurementsNotACKed = measurementsNotACKed - id
       }
     case StopDb =>
       context.system.scheduler.scheduleOnce(Duration.Zero)(System.exit(1))
