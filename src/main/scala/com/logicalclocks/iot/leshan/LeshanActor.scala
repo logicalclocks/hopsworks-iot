@@ -4,10 +4,7 @@ import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Props
 import com.logicalclocks.iot.db.DomainDb.AddMeasurementsToDatabase
-import com.logicalclocks.iot.db.DomainDb.UpdateDeviceBlockStatus
-import com.logicalclocks.iot.leshan.LeshanActor.BlockDeviceWithEndpoint
 import com.logicalclocks.iot.leshan.LeshanActor.DisconnectDevice
-import com.logicalclocks.iot.leshan.LeshanActor.GetBlockedEndpoints
 import com.logicalclocks.iot.leshan.LeshanActor.GetConnectedDevices
 import com.logicalclocks.iot.leshan.LeshanActor.GetLeshanConfig
 import com.logicalclocks.iot.leshan.LeshanActor.NewDevice
@@ -27,8 +24,6 @@ class LeshanActor(config: LeshanConfig, dbActor: ActorRef) extends Actor {
   val server: HopsLeshanServer = new HopsLeshanServer(config, self)
 
   var connectedDevices: Set[IotDevice] = Set.empty
-
-  var blockedDevicesEndpoints: Set[String] = Set.empty
 
   def receive: Receive = {
     case StartServer =>
@@ -50,22 +45,11 @@ class LeshanActor(config: LeshanConfig, dbActor: ActorRef) extends Actor {
       val ipsoObjects: Iterable[IpsoObjectMeasurement] =
         ObserveResponseUnwrapper(timestamp, endpoint, resp)
           .getIpsoObjectList
-      if (!blockedDevicesEndpoints.contains(endpoint))
-        dbActor ! AddMeasurementsToDatabase(ipsoObjects)
+      dbActor ! AddMeasurementsToDatabase(ipsoObjects)
     case GetConnectedDevices =>
       sender ! connectedDevices
-    case GetBlockedEndpoints =>
-      sender ! blockedDevicesEndpoints
     case GetLeshanConfig =>
       sender ! config
-    case BlockDeviceWithEndpoint(endpoint, block) =>
-      if (block) {
-        blockedDevicesEndpoints = blockedDevicesEndpoints + endpoint
-      } else {
-        blockedDevicesEndpoints = blockedDevicesEndpoints - endpoint
-      }
-      dbActor ! UpdateDeviceBlockStatus(endpoint, block)
-      sender ! blockedDevicesEndpoints.contains(endpoint)
   }
 
 }
@@ -86,9 +70,5 @@ object LeshanActor {
 
   final object GetConnectedDevices
 
-  final object GetBlockedEndpoints
-
   final object GetLeshanConfig
-
-  final case class BlockDeviceWithEndpoint(endpoint: String, block: Boolean)
 }

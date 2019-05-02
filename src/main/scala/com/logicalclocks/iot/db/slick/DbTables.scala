@@ -6,8 +6,15 @@ object DbTables {
 
   val measurementsTQ = TableQuery[IpsoObjectMeasurementTable]
   val tempMeasurementsTQ = TableQuery[TempIpsoObjectTable]
+  val blockedEndpointsTQ = TableQuery[BlockedEndpointsTable]
 
-  val tables = List(measurementsTQ, tempMeasurementsTQ)
+  val tables = List(measurementsTQ, tempMeasurementsTQ, blockedEndpointsTQ)
+
+  class BlockedEndpointsTable(tag: Tag) extends Table[(String)](tag, "BLOCKED_ENDPOINTS") {
+    def endpoint = column[String]("ENDPOINT", O.PrimaryKey)
+
+    def * = endpoint
+  }
 
   case class IpsoObjectMeasurementRow(
     id: Int,

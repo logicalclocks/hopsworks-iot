@@ -26,10 +26,11 @@ case class H2DatabaseController(path: String) extends HopsDbController {
     (m, t) <- joinIpsoObject(m1)
   } yield (m.id, createIpsoObjectMeasurement(m, t))
 
-  override def getBatchOfRecords(batchSize: Int): Future[List[DbSingleRecord]] = for {
+  override def getBatchOfRecords(batchSize: Int, without: Set[Int]): Future[List[DbSingleRecord]] = for {
     m <- getSingleRecord.value
     seq <- getBatchOfType(m, batchSize)
-  } yield seq.map { case (m, t) => (m.id, createIpsoObjectMeasurement(m, t)) }.toList
+  } yield seq.map { case (m, t) => (m.id, createIpsoObjectMeasurement(m, t)) }
+    .filter(x => !without.contains(x._1)).toList
 
   private def getBatchOfType(m: Option[DbSingleRecord], batchSize: Int): Future[Seq[(IpsoObjectMeasurementRow, TempIpsoObjectRow)]] =
     m match {
@@ -63,8 +64,13 @@ case class H2DatabaseController(path: String) extends HopsDbController {
   }
 
   //TODO: change implementation to a single SQL query
-  override def addBatchOfRecords(measurements: List[IpsoObjectMeasurement]): Future[Int] =
-    seqFutures(measurements)(addSingleRecord).flatMap { l => Future(l.sum) }
+  override def addBatchOfRecords(measurements: List[IpsoObjectMeasurement]): Future[Int] = {
+    getBlockedEndpoints flatMap { blocked =>
+      Future(measurements.filter(m => !blocked.contains(m.endpointClientName)))
+    } flatMap { xs =>
+      seqFutures(xs)(addSingleRecord).flatMap { l => Future(l.sum) }
+    }
+  }
 
   private def seqFutures[T, U](xs: TraversableOnce[T])(g: T => Future[U]): Future[List[U]] =
     xs.foldLeft(Future.successful[List[U]](Nil)) {
@@ -90,7 +96,12 @@ case class H2DatabaseController(path: String) extends HopsDbController {
     Future(db.close)
 
   private def createDb(): Future[Unit] = {
-    val setup = DBIO.seq((measurementsTQ.schema ++ tempMeasurementsTQ.schema).create)
+    val schemas = DbTables.tables
+      .map(_.schema)
+      .reduceLeft(_ ++ _)
+    val setup = DBIO.seq((measurementsTQ.schema ++
+      tempMeasurementsTQ.schema ++
+      blockedEndpointsTQ.schema).create)
     db.run(setup)
   }
 
@@ -169,4 +180,17 @@ case class H2DatabaseController(path: String) extends HopsDbController {
       }
     }
   }
+
+  override def addBlockedEndpoint(endpoint: String): Future[Int] = {
+    val action = blockedEndpointsTQ += endpoint
+    db.run(action)
+  }
+
+  override def deleteBlockedEndpoint(endpoint: String): Future[Int] = {
+    val action = blockedEndpointsTQ.filter(_.endpoint === endpoint).delete
+    db.run(action)
+  }
+
+  override def getBlockedEndpoints: Future[Seq[String]] =
+    db.run(blockedEndpointsTQ.result)
 }

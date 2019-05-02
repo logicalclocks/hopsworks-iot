@@ -18,6 +18,7 @@ case class HopsworksServer(
   hopsworksPort: Int,
   leshanActor: ActorRef,
   hopsworksServiceActor: ActorRef,
+  dbActor: ActorRef,
   ac: ActorContext)
   extends HopsworksService with Loggable {
 

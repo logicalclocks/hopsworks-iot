@@ -79,7 +79,7 @@ class H2DatabaseControllerSpec extends FunSuite with Matchers with BeforeAndAfte
     } flatMap { _ =>
       db.addSingleRecord(m2)
     } flatMap { _ =>
-      db.getBatchOfRecords(100)
+      db.getBatchOfRecords(100, Set.empty[Int])
     } map { list =>
       list.size shouldBe 2
       val list2 = list.map(_._2)

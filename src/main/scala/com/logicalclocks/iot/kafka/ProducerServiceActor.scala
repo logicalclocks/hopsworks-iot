@@ -37,7 +37,7 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
 
   val fileWriter = HopsFileWriter()
 
-  implicit val timeout = Timeout(5 seconds)
+  implicit val timeout: Timeout = Timeout(5 seconds)
   implicit val executionContext: ExecutionContext = context.system.dispatcher
 
   override def preStart(): Unit = {

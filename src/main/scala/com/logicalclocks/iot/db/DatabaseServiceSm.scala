@@ -7,12 +7,19 @@ import com.logicalclocks.iot.db.DomainDb.Action
 import com.logicalclocks.iot.db.DomainDb.ActionResult
 import com.logicalclocks.iot.db.DomainDb.Add
 import com.logicalclocks.iot.db.DomainDb.AddMeasurementsToDatabase
-import com.logicalclocks.iot.db.DomainDb.AddNewPending
+import com.logicalclocks.iot.db.DomainDb.BlockDeviceByEndpoint
+import com.logicalclocks.iot.db.DomainDb.BlockEndpoint
 import com.logicalclocks.iot.db.DomainDb.DbOutput
 import com.logicalclocks.iot.db.DomainDb.DeleteSingle
 import com.logicalclocks.iot.db.DomainDb.DeleteSingleRecord
 import com.logicalclocks.iot.db.DomainDb.GetBatch
+import com.logicalclocks.iot.db.DomainDb.GetBlockedDevices
+import com.logicalclocks.iot.db.DomainDb.GetBlockedEndpoints
 import com.logicalclocks.iot.db.DomainDb.GetMeasurements
+import com.logicalclocks.iot.db.DomainDb.Stop
+import com.logicalclocks.iot.db.DomainDb.StopDb
+import com.logicalclocks.iot.db.DomainDb.UnblockDeviceByEndpoint
+import com.logicalclocks.iot.db.DomainDb.UnblockEndpoint
 import com.logicalclocks.iot.db.DomainDb.UpdateDeviceBlockStatus
 
 object DatabaseServiceSm {
@@ -23,16 +30,17 @@ object DatabaseServiceSm {
       addResult <- addMeasurementsToDatabase(action)
       getResult <- getMeasurementsFromDatabase(action, sender)
       deleteResult <- deleteRecordsFromDatabase(action)
+      blockedResult <- changeBlockedDevices(action)
     } yield ActionResult(
-      dbOutputs = List(updateResult, addResult, getResult, deleteResult).flatten)
+      dbOutputs = List(updateResult, addResult, getResult, deleteResult, blockedResult).flatten)
 
   def updateDeviceStatus(action: Action): State[DatabaseServiceState, Option[DbOutput]] =
     State[DatabaseServiceState, Option[DbOutput]] { s =>
       action match {
         case UpdateDeviceBlockStatus(endpoint, true) =>
-          (s.copy(blockedDevicesEndpoints = s.blockedDevicesEndpoints + endpoint), none[DbOutput])
+          (s, BlockEndpoint(endpoint).some)
         case UpdateDeviceBlockStatus(endpoint, false) =>
-          (s.copy(blockedDevicesEndpoints = s.blockedDevicesEndpoints - endpoint), none[DbOutput])
+          (s, UnblockEndpoint(endpoint).some)
         case _ =>
           (s, none[DbOutput])
       }
@@ -52,7 +60,7 @@ object DatabaseServiceSm {
     State[DatabaseServiceState, Option[DbOutput]] { s =>
       action match {
         case GetMeasurements =>
-          (s, GetBatch(s.pendingForACK.size + 100).some)
+          (s, GetBatch(100).some)
         case _ =>
           (s, none[DbOutput])
       }
@@ -62,23 +70,35 @@ object DatabaseServiceSm {
     State[DatabaseServiceState, Option[DbOutput]] { s =>
       action match {
         case DeleteSingleRecord(id) =>
-          (s.copy(pendingForACK = s.pendingForACK - id), DeleteSingle(id).some)
+          (s, DeleteSingle(id).some)
         case _ =>
           (s, none[DbOutput])
       }
     }
 
-  def addNewPending(action: Action): State[DatabaseServiceState, Option[DbOutput]] =
+  def stopDatabase(action: Action): State[DatabaseServiceState, Option[DbOutput]] =
     State[DatabaseServiceState, Option[DbOutput]] { s =>
       action match {
-        case AddNewPending(list) =>
-          (s.copy(pendingForACK = s.pendingForACK ++ list.map(_._1)), none[DbOutput])
+        case StopDb =>
+          (s, Stop.some)
         case _ =>
           (s, none[DbOutput])
       }
     }
 
-  case class DatabaseServiceState(
-    blockedDevicesEndpoints: Set[String] = Set.empty[String],
-    pendingForACK: Set[Int] = Set.empty[Int])
+  def changeBlockedDevices(action: Action): State[DatabaseServiceState, Option[DbOutput]] =
+    State[DatabaseServiceState, Option[DbOutput]] { s =>
+      action match {
+        case BlockDeviceByEndpoint(endpoint) =>
+          (s, BlockEndpoint(endpoint).some)
+        case UnblockDeviceByEndpoint(endpoint) =>
+          (s, UnblockEndpoint(endpoint).some)
+        case GetBlockedDevices =>
+          (s, GetBlockedEndpoints.some)
+        case _ =>
+          (s, none[DbOutput])
+      }
+    }
+
+  case class DatabaseServiceState()
 }

@@ -3,6 +3,7 @@ package com.logicalclocks.iot.hopsworks.webserver
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import com.logicalclocks.iot.db.DatabaseServiceActor
 import com.logicalclocks.iot.leshan.LeshanActor
 import com.logicalclocks.iot.leshan.LeshanConfig
 import org.eclipse.leshan.LwM2m
@@ -26,6 +27,8 @@ class HopsworksServiceSpec extends WordSpec
   val leshanActor: ActorRef =
     actorSystem.actorOf(LeshanActor.props(leshanConfig, null))
   val hopsworksServiceActor: ActorRef = null
+  val dbActor: ActorRef =
+    actorSystem.actorOf(DatabaseServiceActor.props("h2mem1"))
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()

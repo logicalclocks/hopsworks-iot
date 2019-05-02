@@ -19,9 +19,15 @@ trait HopsDbController {
 
   def getSingleRecord: OptionT[Future, DbSingleRecord]
 
-  def getBatchOfRecords(batchSize: Int): Future[List[DbSingleRecord]]
+  def getBatchOfRecords(batchSize: Int, without: Set[Int]): Future[List[DbSingleRecord]]
 
   def deleteSingleRecord(measurementId: Int): Future[Int]
 
   def deleteListOfRecords(measurementId: List[Int]): Future[Int]
+
+  def addBlockedEndpoint(endpoint: String): Future[Int]
+
+  def deleteBlockedEndpoint(endpoint: String): Future[Int]
+
+  def getBlockedEndpoints: Future[Seq[String]]
 }
