@@ -46,7 +46,7 @@ class DatabaseServiceActor(dbConfig: String) extends Actor {
       }
     case GetMeasurements =>
       db.getBatchOfRecords(measurementsNotACKed.size + 100) flatMap { list =>
-        val filtered = list.filter{tuple => !measurementsNotACKed.contains(tuple._1)}
+        val filtered = list.filter { tuple => !measurementsNotACKed.contains(tuple._1) }
         measurementsNotACKed = measurementsNotACKed ++ filtered.map(_._1)
         Future(filtered)
       } pipeTo sender

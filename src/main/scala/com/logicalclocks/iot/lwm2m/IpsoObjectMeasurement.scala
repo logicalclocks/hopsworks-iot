@@ -3,11 +3,11 @@ package com.logicalclocks.iot.lwm2m
 import com.sksamuel.avro4s.AvroProp
 
 sealed trait IpsoObjectMeasurement {
-  val timestamp: Long
-  val endpointClientName: String
-  val objectId: Int
-  val instanceId: Int
-  val ipsoObject: IpsoObject
+  def timestamp: Long
+  def endpointClientName: String
+  def objectId: Int
+  def instanceId: Int
+  def ipsoObject: IpsoObject
 }
 
 @AvroProp("objectId", "3303")

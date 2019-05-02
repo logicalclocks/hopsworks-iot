@@ -27,8 +27,8 @@ import scala.language.postfixOps
 
 trait HopsworksService {
 
-  val leshanActor: ActorRef
-  val hopsworksServiceActor: ActorRef
+  def leshanActor: ActorRef
+  def hopsworksServiceActor: ActorRef
 
   implicit val timeout: Timeout = Timeout(5 seconds)
   implicit val ec: ExecutionContext

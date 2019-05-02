@@ -45,7 +45,7 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
   }
 
   override def postStop(): Unit = {
-    pollingCancellable.foreach(_ cancel())
+    pollingCancellable.foreach(_ cancel ())
     kafkaProducer.foreach(_.close())
     val removed = fileWriter.cleanUp()
     logger.debug("Cleaned up files: " + removed.unsafeRunSync())
