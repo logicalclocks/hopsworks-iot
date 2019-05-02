@@ -5,7 +5,7 @@ import java.util.Properties
 
 import akka.actor.ActorRef
 import com.logicalclocks.iot.commons.PropertiesReader
-import com.logicalclocks.iot.db.DatabaseServiceActor.DeleteSingleRecord
+import com.logicalclocks.iot.db.DomainDb.DeleteSingleRecord
 import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
 import com.logicalclocks.iot.lwm2m.TempIpsoObjectMeasurement
 import org.apache.avro.Schema

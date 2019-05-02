@@ -1,24 +1,25 @@
 package com.logicalclocks.iot.db
 
 import akka.actor.Actor
+import akka.actor.ActorRef
 import akka.actor.Props
+import akka.pattern.ask
 import akka.pattern.pipe
-import com.logicalclocks.iot.db.DatabaseServiceActor.AddMeasurementsToDatabase
-import com.logicalclocks.iot.db.DatabaseServiceActor.DeleteSingleRecord
-import com.logicalclocks.iot.db.DatabaseServiceActor.GetMeasurements
-import com.logicalclocks.iot.db.DatabaseServiceActor.StopDb
-import com.logicalclocks.iot.db.DatabaseServiceActor.UpdateDeviceBlockStatus
+import com.logicalclocks.iot.db.DatabaseServiceSm.DatabaseServiceState
+import com.logicalclocks.iot.db.DomainDb.Action
+import com.logicalclocks.iot.db.DomainDb.StopDb
 import com.logicalclocks.iot.db.slick.H2DatabaseController
-import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import DomainDb._
+import akka.util.Timeout
+import scala.concurrent.duration._
+import scala.language.postfixOps
+
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-import scala.util.Failure
-import scala.util.Success
 
 class DatabaseServiceActor(dbConfig: String) extends Actor {
   val logger: Logger = LoggerFactory.getLogger(getClass)
@@ -27,9 +28,11 @@ class DatabaseServiceActor(dbConfig: String) extends Actor {
   db.start
 
   implicit val executionContext: ExecutionContext = context.system.dispatcher
+  implicit val timeout: Timeout = Timeout(5 seconds)
 
-  var blockedDevicesEndpointsBuffer: Set[String] = Set.empty
-  var measurementsNotACKed: Set[Int] = Set.empty
+
+  val dbOutputsActor: ActorRef =
+    context.system.actorOf(DbOutputsActor.props("h2hopsworks"))
 
   override def postStop(): Unit = {
     logger.debug("Stop database")
@@ -38,46 +41,28 @@ class DatabaseServiceActor(dbConfig: String) extends Actor {
     super.postStop()
   }
 
-  def receive: Receive = {
-    case AddMeasurementsToDatabase(measurements) =>
-      db.addBatchOfRecords(measurements.toList) onComplete {
-        case Success(s) => logger.debug(s"Added $s elements to database")
-        case Failure(f) => logger.error(s"Error adding to db $f")
-      }
-    case GetMeasurements =>
-      db.getBatchOfRecords(measurementsNotACKed.size + 100) flatMap { list =>
-        val filtered = list.filter { tuple => !measurementsNotACKed.contains(tuple._1) }
-        measurementsNotACKed = measurementsNotACKed ++ filtered.map(_._1)
-        Future(filtered)
-      } pipeTo sender
-    case UpdateDeviceBlockStatus(endpoint, block) =>
-      if (block)
-        blockedDevicesEndpointsBuffer = blockedDevicesEndpointsBuffer + endpoint
-      else
-        blockedDevicesEndpointsBuffer = blockedDevicesEndpointsBuffer - endpoint
-    case DeleteSingleRecord(id) =>
-      db.deleteSingleRecord(id) foreach { res =>
-        logger.debug(s"Result deleting object $id: $res")
-        if (res == 1)
-          measurementsNotACKed = measurementsNotACKed - id
-      }
+  def receive = active(DatabaseServiceState())
+
+  def active(state: DatabaseServiceState): Receive = {
     case StopDb =>
       context.system.scheduler.scheduleOnce(Duration.Zero)(System.exit(1))
+    case a: Action =>
+      logger.debug(a.getClass.toString)
+      val (newState, results) = DatabaseServiceSm
+        .compose(a, sender)
+        .run(state).value
+
+      results.dbOutputs
+        .foreach {
+          case e: GetBatch => (dbOutputsActor ? e) pipeTo sender
+          case effect => dbOutputsActor ! effect
+        }
+
+      context become active(newState)
   }
 }
 
 object DatabaseServiceActor {
   def props(dbConfig: String): Props = Props(new DatabaseServiceActor(dbConfig))
-
-  final case class AddMeasurementsToDatabase(measurements: Iterable[IpsoObjectMeasurement])
-
-  final object GetMeasurements
-
-  final case class UpdateDeviceBlockStatus(endpoint: String, block: Boolean)
-
-  final object StopDb
-
-  final case class DeleteSingleRecord(id: Int)
-
 }
 

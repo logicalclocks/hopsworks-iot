@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.actor.Terminated
 import com.logicalclocks.iot.db.DatabaseServiceActor
-import com.logicalclocks.iot.db.DatabaseServiceActor.StopDb
+import com.logicalclocks.iot.db.DomainDb.StopDb
 import com.logicalclocks.iot.hopsworks.HopsworksServiceActor
 import com.logicalclocks.iot.hopsworks.HopsworksServiceActor.StartHopsworksServer
 import com.logicalclocks.iot.kafka.ProducerServiceActor

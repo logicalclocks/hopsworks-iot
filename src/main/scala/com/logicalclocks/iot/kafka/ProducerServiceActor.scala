@@ -6,7 +6,7 @@ import akka.actor.Cancellable
 import akka.actor.Props
 import akka.pattern.ask
 import akka.util.Timeout
-import com.logicalclocks.iot.db.DatabaseServiceActor.GetMeasurements
+import com.logicalclocks.iot.db.DomainDb.GetMeasurements
 import com.logicalclocks.iot.hopsworks.GatewayCertsDTO
 import com.logicalclocks.iot.hopsworks.HopsFileWriter
 import com.logicalclocks.iot.kafka.ProducerServiceActor.AddAvroSchema
@@ -70,6 +70,8 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
     case StopProducer =>
       implicit val executionContext: ExecutionContext = context.system.dispatcher
       context.system.scheduler.scheduleOnce(Duration.Zero)(System.exit(1))
+    case _ =>
+      logger.error("Unknown message type!")
   }
 }
 
