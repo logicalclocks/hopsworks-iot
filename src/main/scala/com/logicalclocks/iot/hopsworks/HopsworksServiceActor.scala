@@ -24,6 +24,7 @@ class HopsworksServiceActor(
   hopsworksHostname: String,
   hopsworksPort: Int,
   leshanActor: ActorRef,
+  dbActor: ActorRef,
   producerServiceActor: ActorRef) extends Actor {
 
   implicit val ec: ExecutionContextExecutor = context.system.dispatcher
@@ -32,7 +33,7 @@ class HopsworksServiceActor(
 
   val hopsworksServer = HopsworksServer(host, port,
     hopsworksHostname, hopsworksPort,
-    leshanActor, self, context)
+    leshanActor, self, dbActor, context)
 
   val hopsworksClient = HopsworksClient(hopsworksHostname, hopsworksPort, self)
 
@@ -72,8 +73,9 @@ object HopsworksServiceActor {
     hopsworksHostname: String,
     hopsworksPort: Int,
     leshanActor: ActorRef,
+    dbActor: ActorRef,
     producerServiceActor: ActorRef): Props =
-    Props(new HopsworksServiceActor(host, port, hopsworksHostname, hopsworksPort, leshanActor, producerServiceActor))
+    Props(new HopsworksServiceActor(host, port, hopsworksHostname, hopsworksPort, leshanActor, dbActor, producerServiceActor))
 
   final object StartHopsworksServer
 
