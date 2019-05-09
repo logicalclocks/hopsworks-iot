@@ -1,4 +1,4 @@
-package com.logicalclocks.iot.db.slick
+package com.logicalclocks.iot.db
 
 import cats.data.OptionT
 import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement

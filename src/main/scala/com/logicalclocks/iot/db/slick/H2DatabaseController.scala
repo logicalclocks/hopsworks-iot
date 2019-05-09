@@ -2,6 +2,7 @@ package com.logicalclocks.iot.db.slick
 
 import cats.data.OptionT
 import cats.implicits._
+import com.logicalclocks.iot.db.HopsDbController
 import com.logicalclocks.iot.db.slick.DbTables._
 import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
 import com.logicalclocks.iot.lwm2m.TempIpsoObject

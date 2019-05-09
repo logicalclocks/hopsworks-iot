@@ -39,7 +39,7 @@ object DbTables {
         (IpsoObjectMeasurementRow.apply _).tupled,
         IpsoObjectMeasurementRow.unapply _)
 
-    def pk = primaryKey("PK_MEASUREMENTS", id)
+    def pk = primaryKey("PK_MEASUREMENTS", (timestamp, endpointClientName, instanceId))
   }
 
   sealed trait IpsoObjectRow

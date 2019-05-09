@@ -52,6 +52,7 @@ class DbOutputsActor(dbConfig: String) extends Actor {
         Future(batch)
       } pipeTo sender
     case DeleteSingle(id) =>
+      // TODO: make sure the operation is atomic - react to failures!
       db.deleteSingleRecord(id) foreach { res =>
         logger.debug(s"Result deleting object $id: $res")
         context become active(pendingForACK - id)
