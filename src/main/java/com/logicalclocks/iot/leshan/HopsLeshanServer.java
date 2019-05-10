@@ -117,10 +117,6 @@ public class HopsLeshanServer {
     }
 
     public void createAndStartServer() throws Exception {
-        //disable jetty logging
-        System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.StdErrLog");
-        System.setProperty("org.eclipse.jetty.LEVEL", "OFF");
-
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setLocalAddress(coapHost, coapPort);

@@ -1,5 +1,6 @@
 package com.logicalclocks.iot.lwm2m
 
+import com.typesafe.config.ConfigFactory
 import org.eclipse.leshan.core.node.LwM2mObjectInstance
 import org.eclipse.leshan.core.node.LwM2mResource
 import org.eclipse.leshan.core.response.ObserveResponse
@@ -14,6 +15,8 @@ case class ObserveResponseUnwrapper(
   endpointClientName: String,
   response: ObserveResponse) {
 
+  val gatewayId: Int = ConfigFactory.load().getInt("gateway.id")
+
   private val resources: Vector[LwM2mResource] = response
     .getContent
     .asInstanceOf[LwM2mObjectInstance]
@@ -22,7 +25,7 @@ case class ObserveResponseUnwrapper(
     .values
     .toVector
 
-  def getIpsoObjectList: Iterable[IpsoObjectMeasurement] =
+  def getIpsoObjectList: Iterable[Measurement] =
     response.getObservation.getPath.getObjectId.toInt match {
       case 3303 =>
         //        instances.flatMap(extractTempFromInstance)
@@ -30,7 +33,7 @@ case class ObserveResponseUnwrapper(
       case _ => throw new Error("Unknown ipso object")
     }
 
-  private def extractTempFromInstance(resources: Vector[LwM2mResource]): Option[IpsoObjectMeasurement] = {
+  private def extractTempFromInstance(resources: Vector[LwM2mResource]): Option[Measurement] = {
     val resourcesMap: Map[Int, AnyRef] = resources
       .map { r => (r.getId, r.getValue) }.toMap
 
@@ -44,7 +47,7 @@ case class ObserveResponseUnwrapper(
       resourcesMap.get(5605).map(_.asInstanceOf[Boolean]))
 
     Try(tempIpsoObject)
-      .map(TempIpsoObjectMeasurement(timestamp, endpointClientName, 1, _)) match {
+      .map(TempMeasurement(timestamp, endpointClientName, 1, gatewayId, _)) match {
         case Success(x) => Some(x)
         case _ => None
       }

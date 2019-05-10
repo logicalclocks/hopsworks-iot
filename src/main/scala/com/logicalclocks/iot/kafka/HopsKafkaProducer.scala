@@ -6,8 +6,8 @@ import java.util.Properties
 import akka.actor.ActorRef
 import com.logicalclocks.iot.commons.PropertiesReader
 import com.logicalclocks.iot.db.DomainDb.DeleteSingleRecord
-import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
-import com.logicalclocks.iot.lwm2m.TempIpsoObjectMeasurement
+import com.logicalclocks.iot.lwm2m.Measurement
+import com.logicalclocks.iot.lwm2m.TempMeasurement
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
@@ -47,7 +47,7 @@ case class HopsKafkaProducer(kStorePath: String, tStorePath: String, pass: Strin
   def close(): Unit =
     producer.close()
 
-  def sendIpsoObject(dbId: Int, obj: IpsoObjectMeasurement, schemaOption: Option[Schema]) = {
+  def sendIpsoObject(dbId: Int, obj: Measurement, schemaOption: Option[Schema]) = {
     val topic: Option[String] = LwM2mTopics.findNameByObjectId(obj.objectId)
     if (topic.isEmpty) {
       logger.error(s"Cannot find topic for objectId ${obj.objectId}.")
@@ -70,16 +70,17 @@ case class HopsKafkaProducer(kStorePath: String, tStorePath: String, pass: Strin
     }
   }
 
-  private def getGenericRecord(obj: IpsoObjectMeasurement, schema: Schema): GenericRecord = obj match {
-    case t: TempIpsoObjectMeasurement => getGenericRecordTemp(t, schema)
+  private def getGenericRecord(obj: Measurement, schema: Schema): GenericRecord = obj match {
+    case t: TempMeasurement => getGenericRecordTemp(t, schema)
     case _ => throw new Error("Trying to send unknown ipso object to Kafka")
   }
 
-  private def getGenericRecordTemp(measurement: TempIpsoObjectMeasurement, schema: Schema): GenericRecord = {
+  private def getGenericRecordTemp(measurement: TempMeasurement, schema: Schema): GenericRecord = {
     val record = new GenericData.Record(schema)
     record.put("timestamp", measurement.timestamp)
     record.put("endpointClientName", measurement.endpointClientName)
     record.put("instanceId", measurement.instanceId)
+    record.put("gatewayId", measurement.gatewayId)
     val ipsoObject = new GenericData.Record(schema.getField("ipsoObject").schema)
     ipsoObject.put("sensorValue", measurement.ipsoObject.sensorValue)
     measurement.ipsoObject.minMeasuredValue.foreach(ipsoObject.put("minMeasuredValue", _))

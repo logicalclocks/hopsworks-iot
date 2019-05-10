@@ -6,6 +6,7 @@ import java.io.OutputStream
 
 import cats.effect.IO
 import cats.effect.Resource
+import com.typesafe.config.ConfigFactory
 import org.apache.commons.net.util.Base64
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -13,7 +14,7 @@ import org.slf4j.LoggerFactory
 import scala.reflect.io.Directory
 
 case class HopsFileWriter() {
-  val folder = s"/tmp/hopsworks-iot-${System.currentTimeMillis}"
+  val folder = ConfigFactory.load.getString("gateway.directory") + "/certs"
 
   private val logger: Logger = LoggerFactory.getLogger(getClass)
   private val folderFile = new File(folder)

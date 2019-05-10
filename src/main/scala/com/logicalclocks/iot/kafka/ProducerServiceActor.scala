@@ -14,7 +14,7 @@ import com.logicalclocks.iot.kafka.ProducerServiceActor.PollDatabase
 import com.logicalclocks.iot.kafka.ProducerServiceActor.ScheduleDatabasePoll
 import com.logicalclocks.iot.kafka.ProducerServiceActor.StopProducer
 import com.logicalclocks.iot.kafka.ProducerServiceActor.UpdateCerts
-import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
+import com.logicalclocks.iot.lwm2m.Measurement
 import org.apache.avro.Schema
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -54,7 +54,7 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
   def receive: Receive = {
     case PollDatabase =>
       (dbActor ? GetMeasurements)
-        .mapTo[Iterable[(Int, IpsoObjectMeasurement)]]
+        .mapTo[Iterable[(Int, Measurement)]]
         .foreach(list =>
           list.foreach(m =>
             kafkaProducer.foreach(_.sendIpsoObject(m._1, m._2, avroSchemas.get(m._2.objectId)))))

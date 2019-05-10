@@ -4,7 +4,7 @@ import slick.jdbc.H2Profile.api._
 
 object DbTables {
 
-  val measurementsTQ = TableQuery[IpsoObjectMeasurementTable]
+  val measurementsTQ = TableQuery[MeasurementsTable]
   val tempMeasurementsTQ = TableQuery[TempIpsoObjectTable]
   val blockedEndpointsTQ = TableQuery[BlockedEndpointsTable]
 
@@ -16,14 +16,15 @@ object DbTables {
     def * = endpoint
   }
 
-  case class IpsoObjectMeasurementRow(
+  case class MeasurementRow(
     id: Int,
     timestamp: Long,
     endpointClientName: String,
     instanceId: Int,
+    gatewayId: Int,
     objectId: Int)
 
-  class IpsoObjectMeasurementTable(tag: Tag) extends Table[IpsoObjectMeasurementRow](tag, "MEASUREMENTS") {
+  class MeasurementsTable(tag: Tag) extends Table[MeasurementRow](tag, "MEASUREMENTS") {
     def id = column[Int]("ID", O.AutoInc)
 
     def timestamp = column[Long]("TIMESTAMP")
@@ -32,12 +33,14 @@ object DbTables {
 
     def instanceId = column[Int]("INSTANCE_ID")
 
+    def gatewayId = column[Int]("GATEWAY_ID")
+
     def objectId = column[Int]("OBJECT_ID")
 
     def * =
-      (id, timestamp, endpointClientName, instanceId, objectId) <> (
-        (IpsoObjectMeasurementRow.apply _).tupled,
-        IpsoObjectMeasurementRow.unapply _)
+      (id, timestamp, endpointClientName, instanceId, gatewayId, objectId) <> (
+        (MeasurementRow.apply _).tupled,
+        MeasurementRow.unapply _)
 
     def pk = primaryKey("PK_MEASUREMENTS", (timestamp, endpointClientName, instanceId))
   }

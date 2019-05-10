@@ -4,18 +4,16 @@ import cats.data.OptionT
 import cats.implicits._
 import com.logicalclocks.iot.db.HopsDbController
 import com.logicalclocks.iot.db.slick.DbTables._
-import com.logicalclocks.iot.lwm2m.IpsoObjectMeasurement
+import com.logicalclocks.iot.lwm2m.Measurement
 import com.logicalclocks.iot.lwm2m.TempIpsoObject
-import com.logicalclocks.iot.lwm2m.TempIpsoObjectMeasurement
+import com.logicalclocks.iot.lwm2m.TempMeasurement
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import slick.jdbc.H2Profile.api._
 import slick.jdbc.meta.MTable
 
-import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.concurrent.duration.Duration
 
 case class H2DatabaseController(path: String) extends HopsDbController {
   val logger: Logger = LoggerFactory.getLogger(getClass)
@@ -33,7 +31,7 @@ case class H2DatabaseController(path: String) extends HopsDbController {
   } yield seq.map { case (m, t) => (m.id, createIpsoObjectMeasurement(m, t)) }
     .filter(x => !without.contains(x._1)).toList
 
-  private def getBatchOfType(m: Option[DbSingleRecord], batchSize: Int): Future[Seq[(IpsoObjectMeasurementRow, TempIpsoObjectRow)]] =
+  private def getBatchOfType(m: Option[DbSingleRecord], batchSize: Int): Future[Seq[(MeasurementRow, TempIpsoObjectRow)]] =
     m match {
       case Some(mm) => {
         mm._2.objectId match {
@@ -56,7 +54,7 @@ case class H2DatabaseController(path: String) extends HopsDbController {
 
   override def deleteListOfRecords(measurementId: List[Int]): Future[Int] = ???
 
-  override def addSingleRecord(measurement: IpsoObjectMeasurement): Future[Int] = measurement.objectId match {
+  override def addSingleRecord(measurement: Measurement): Future[Int] = measurement.objectId match {
     case 3303 =>
       addMeasurement(measurement).flatMap(mId =>
         addTempIpsoObject(mId, measurement.ipsoObject.asInstanceOf[TempIpsoObject]))
@@ -65,7 +63,7 @@ case class H2DatabaseController(path: String) extends HopsDbController {
   }
 
   //TODO: change implementation to a single SQL query
-  override def addBatchOfRecords(measurements: List[IpsoObjectMeasurement]): Future[Int] = {
+  override def addBatchOfRecords(measurements: List[Measurement]): Future[Int] = {
     getBlockedEndpoints flatMap { blocked =>
       Future(measurements.filter(m => !blocked.contains(m.endpointClientName)))
     } flatMap { xs =>
@@ -111,40 +109,10 @@ case class H2DatabaseController(path: String) extends HopsDbController {
     db.run(MTable.getTables)
   }
 
-  // $COVERAGE-OFF$
-  @Deprecated
-  def printContent() = {
-    val action: Future[Unit] = {
-      logger.info("Measurements:")
-      val q1 = for (m <- measurementsTQ)
-        yield LiteralColumn("  ") ++
-        m.id.asColumnOf[String] ++ "\t" ++
-        m.timestamp.asColumnOf[String] ++ "\t" ++
-        m.endpointClientName ++ "\t" ++
-        m.instanceId.asColumnOf[String] ++ "\t" ++
-        m.objectId.asColumnOf[String]
-      db.stream(q1.result).foreach(logger.info)
-    }.flatMap { _ =>
-      println("\nTemps:")
-      val q2 = for (t <- tempMeasurementsTQ)
-        yield LiteralColumn("  ") ++ t.measurementId.asColumnOf[String] ++ "\t" ++
-        t.sensorValue.asColumnOf[String] ++ "\t" ++
-        t.minMeasuredValue.getOrElse(0.0).asColumnOf[String] ++ "\t" ++
-        t.maxMeasuredValue.getOrElse(0.0).asColumnOf[String] ++ "\t" ++
-        t.minRangeValue.getOrElse(0.0).asColumnOf[String] ++ "\t" ++
-        t.maxRangeValue.getOrElse(0.0).asColumnOf[String] ++ "\t" ++
-        t.sensorUnits.getOrElse("").asColumnOf[String] ++ "\t" ++
-        t.resetMinAndMaxMeasuredValues.getOrElse(false).asColumnOf[String]
-      db.stream(q2.result).foreach(logger.info)
-    }
-    Await.result(action, Duration.Inf)
-  }
-  // $COVERAGE-ON$
-
-  private def addMeasurement(obj: IpsoObjectMeasurement): Future[Int] = {
+  private def addMeasurement(obj: Measurement): Future[Int] = {
     val insertMeasurementQuery = measurementsTQ returning measurementsTQ.map(_.id) into ((row, id) => row.copy(id = id))
-    val action = insertMeasurementQuery += IpsoObjectMeasurementRow(0, obj.timestamp, obj.endpointClientName,
-      obj.instanceId, obj.objectId)
+    val action = insertMeasurementQuery += MeasurementRow(0, obj.timestamp, obj.endpointClientName,
+      obj.instanceId, obj.gatewayId, obj.objectId)
     db.run(action) map (res => res.id)
   }
 
@@ -157,12 +125,12 @@ case class H2DatabaseController(path: String) extends HopsDbController {
     db.run(action)
   }
 
-  private def getTopMeasurement: OptionT[Future, IpsoObjectMeasurementRow] = {
+  private def getTopMeasurement: OptionT[Future, MeasurementRow] = {
     val q = measurementsTQ.take(1).result.headOption
     OptionT(db.run(q))
   }
 
-  private def joinIpsoObject(m: IpsoObjectMeasurementRow): OptionT[Future, (IpsoObjectMeasurementRow, IpsoObjectRow)] = m.objectId match {
+  private def joinIpsoObject(m: MeasurementRow): OptionT[Future, (MeasurementRow, IpsoObjectRow)] = m.objectId match {
     case 3303 => {
       val a = for {
         (m, t) <- measurementsTQ join tempMeasurementsTQ on (_.id === _.measurementId)
@@ -172,11 +140,11 @@ case class H2DatabaseController(path: String) extends HopsDbController {
     }
   }
 
-  private def createIpsoObjectMeasurement(m: IpsoObjectMeasurementRow, i: IpsoObjectRow): IpsoObjectMeasurement = {
+  private def createIpsoObjectMeasurement(m: MeasurementRow, i: IpsoObjectRow): Measurement = {
     m.objectId match {
       case 3303 => {
         val t = i.asInstanceOf[TempIpsoObjectRow]
-        TempIpsoObjectMeasurement(m.timestamp, m.endpointClientName, m.instanceId, TempIpsoObject(
+        TempMeasurement(m.timestamp, m.endpointClientName, m.instanceId, m.gatewayId, TempIpsoObject(
           t.sensorValue, t.minMeasuredValue, t.maxMeasuredValue, t.minRangeValue, t.maxRangeValue, t.sensorUnits, t.resetMinAndMaxMeasuredValues))
       }
     }

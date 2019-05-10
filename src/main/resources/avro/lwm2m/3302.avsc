@@ -1,11 +1,11 @@
 {
     "type":"record",
-    "name":"PresenceIpsoObjectMeasurement",
-    "namespace":"com.logicalclocks.iot.lwm2m",
+    "name":"PresenceMeasurement",
     "fields":[
         {"name":"timestamp","type":"long"},
         {"name":"endpointClientName","type":"string"},
         {"name":"instanceId","type":"int"},
+        {"name":"gatewayId","type":"int"},
         {"name":"ipsoObject","type":{"type":"record","name":"PresenceIpsoObject","fields":[
             {"name":"digitalInputState","type":"boolean"},
             {"name":"digitalInputCounter","type":["null","int"]},

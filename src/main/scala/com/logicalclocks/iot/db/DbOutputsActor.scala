@@ -44,7 +44,6 @@ class DbOutputsActor(dbConfig: String) extends Actor {
   def active(pendingForACK: Set[Int]): Receive = {
     case Add(measurements) =>
       db.addBatchOfRecords(measurements.toList) foreach { res =>
-        logger.debug(s"Added $res elements to database")
       }
     case GetBatch(batchSize) =>
       db.getBatchOfRecords(batchSize, pendingForACK) flatMap { batch =>
@@ -54,7 +53,6 @@ class DbOutputsActor(dbConfig: String) extends Actor {
     case DeleteSingle(id) =>
       // TODO: make sure the operation is atomic - react to failures!
       db.deleteSingleRecord(id) foreach { res =>
-        logger.debug(s"Result deleting object $id: $res")
         context become active(pendingForACK - id)
       }
     case BlockEndpoint(endpoint) =>
