@@ -2,7 +2,8 @@
 This is the IoT Gateway part of the project that integrates IoT and Big Data. It will be the only secure end-to-end open source system supporting ingesting IoT data into Big Data platforms. The framework will also provide generic support for automated classification of IoT data to support anomaly detection, and denial-of-service attacks, providing mitigating measures, such as automated exclusion of misbehaving devices and dropping of traffic from sources of DoS attacks.
 
 ## other components
-Hopsworks development branch: [iot-thesis](https://github.com/kai-chi/hopsworks/tree/iot-thesis)
+Hopsworks dev branch: [hopsworks](https://github.com/kai-chi/hopsworks/tree/iot-thesis)
+Hops-util dev branch: [hops-util](https://github.com/kai-chi/hops-util/tree/iot-thesis)
 
 ## architecture
 ![text](/screens/SystemArchitecture.jpg)
@@ -18,7 +19,7 @@ soon...
 - [x] Milestone 1 - IoT<br/>
 - [x] Milestone 2 - Kafka Producer<br/>
 - [x] Milestone 3 - APIs<br/>
-- [ ] Milestone 4 - DatabaseService<br/>
+- [x] Milestone 4 - DatabaseService<br/>
 - [ ] Milestone 4.5 - Front-end<br/>
 - [ ] Milestone 5 - Streaming jobs<br/>
 - [ ] Milestone 6 - Testing & benchmarking<br/>
