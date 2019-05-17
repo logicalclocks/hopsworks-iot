@@ -23,24 +23,26 @@ class LeshanActor(config: LeshanConfig, dbActor: ActorRef) extends Actor {
   val logger: Logger = LoggerFactory.getLogger(getClass)
   val server: HopsLeshanServer = new HopsLeshanServer(config, self)
 
-  var connectedDevices: Set[IotDevice] = Set.empty
+  def receive = active(Set.empty[IotDevice])
 
-  def receive: Receive = {
+  def active(connectedDevices: Set[IotDevice]): Receive = {
     case StartServer =>
       server.createAndStartServer()
     case NewDevice(reg) =>
-      connectedDevices = connectedDevices + IotDevice(reg)
-      logger.info(s"New device connected with endpoint ${reg.getEndpoint}." +
-        s"Currently connected devices ${connectedDevices.size}")
-    // automatically observe the temp value
-    // stop doing in unconditionally!!
-    //self ! ObserveTemp(reg)
+      val updated = connectedDevices + IotDevice(reg)
+      logger.info(s"New device connected with endpoint ${reg.getEndpoint}.")
+      logger.info(s"Currently connected devices ${connectedDevices.size}")
+      // automatically observe the temp value
+      // stop doing in unconditionally!!
+      //self ! ObserveTemp(reg)
+      context become active(updated)
     case ObserveTemp(reg) =>
       val _ = server.observeRequest(reg, 3303)
     case DisconnectDevice(endpoint) =>
-      connectedDevices = connectedDevices.filterNot(_.endpoint == endpoint)
+      val updated = connectedDevices.filterNot(_.endpoint == endpoint)
       logger.debug(s"Disconnect device with endpoint $endpoint. " +
         s"Currently connected devices ${connectedDevices.size}")
+      context become active(updated)
     case NewObserveResponse(endpoint, resp, timestamp) =>
       val ipsoObjects: Iterable[Measurement] =
         ObserveResponseUnwrapper(timestamp, endpoint, resp)
