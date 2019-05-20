@@ -31,17 +31,14 @@ class LeshanActor(config: LeshanConfig, dbActor: ActorRef) extends Actor {
     case NewDevice(reg) =>
       val updated = connectedDevices + IotDevice(reg)
       logger.info(s"New device connected with endpoint ${reg.getEndpoint}.")
-      logger.info(s"Currently connected devices ${connectedDevices.size}")
-      // automatically observe the temp value
-      // stop doing in unconditionally!!
-      //self ! ObserveTemp(reg)
+      logger.debug(s"Currently connected devices ${updated.size}")
       context become active(updated)
     case ObserveTemp(reg) =>
       val _ = server.observeRequest(reg, 3303)
     case DisconnectDevice(endpoint) =>
       val updated = connectedDevices.filterNot(_.endpoint == endpoint)
-      logger.debug(s"Disconnect device with endpoint $endpoint. " +
-        s"Currently connected devices ${connectedDevices.size}")
+      logger.info(s"Disconnect device with endpoint $endpoint.")
+      logger.debug(s"Currently connected devices ${updated.size}")
       context become active(updated)
     case NewObserveResponse(endpoint, resp, timestamp) =>
       val ipsoObjects: Iterable[Measurement] =
