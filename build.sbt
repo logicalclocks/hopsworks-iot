@@ -38,7 +38,6 @@ lazy val logbackVersion = "1.1.2"
 lazy val neo4jVersion = "3.5.4"
 lazy val scalaLoggingVersion = "3.9.2"
 lazy val scalaTestVersion = "3.0.5"
-lazy val scoptVersion = "4.0.0-RC2"
 lazy val slickHickariCpVersion = "3.3.0"
 lazy val slickVersion = "3.3.0"
 lazy val slickTestKitVersion = "3.2.3"
@@ -46,7 +45,6 @@ lazy val typesafeConfigVersion = "1.3.3"
 
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % logbackVersion,
-  "com.github.scopt" %% "scopt" % scoptVersion,
   "com.h2database" % "h2" % h2Version,
   "com.sksamuel.avro4s" %% "avro4s-kafka" % avro4sVersion,
   "com.typesafe" % "config" % typesafeConfigVersion,

@@ -3,6 +3,7 @@ package com.logicalclocks.iot.leshan
 import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Props
+import com.logicalclocks.iot.IotGateway.config
 import com.logicalclocks.iot.db.DomainDb.AddMeasurementsToDatabase
 import com.logicalclocks.iot.leshan.LeshanActor.DisconnectDevice
 import com.logicalclocks.iot.leshan.LeshanActor.GetConnectedDevices
@@ -14,13 +15,20 @@ import com.logicalclocks.iot.leshan.LeshanActor.StartServer
 import com.logicalclocks.iot.leshan.devices.IotDevice
 import com.logicalclocks.iot.lwm2m.Measurement
 import com.logicalclocks.iot.lwm2m.ObserveResponseUnwrapper
+import com.typesafe.config.ConfigFactory
 import org.eclipse.leshan.core.response.ObserveResponse
 import org.eclipse.leshan.server.registration.Registration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class LeshanActor(config: LeshanConfig, dbActor: ActorRef) extends Actor {
+class LeshanActor(dbActor: ActorRef) extends Actor {
   val logger: Logger = LoggerFactory.getLogger(getClass)
+  val config = LeshanConfig(
+    ConfigFactory.load().getString("leshan.coapsHost"),
+    ConfigFactory.load().getInt("leshan.coapsPort"),
+    ConfigFactory.load().getString("leshan.coapHost"),
+    ConfigFactory.load().getInt("leshan.coapPort"))
+
   val server: HopsLeshanServer = new HopsLeshanServer(config, self)
 
   def receive = active(Set.empty[IotDevice])
@@ -55,7 +63,7 @@ class LeshanActor(config: LeshanConfig, dbActor: ActorRef) extends Actor {
 
 object LeshanActor {
 
-  def props(config: LeshanConfig, dbActor: ActorRef): Props = Props(new LeshanActor(config, dbActor))
+  def props(dbActor: ActorRef): Props = Props(new LeshanActor(dbActor))
 
   final object StartServer
 
