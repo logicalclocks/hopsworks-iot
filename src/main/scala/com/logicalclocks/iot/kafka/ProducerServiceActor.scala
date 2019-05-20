@@ -8,7 +8,6 @@ import akka.pattern.ask
 import akka.util.Timeout
 import com.logicalclocks.iot.db.DomainDb.GetMeasurements
 import com.logicalclocks.iot.hopsworks.GatewayCertsDTO
-import com.logicalclocks.iot.hopsworks.HopsFileWriter
 import com.logicalclocks.iot.kafka.ProducerServiceActor.AddAvroSchema
 import com.logicalclocks.iot.kafka.ProducerServiceActor.PollDatabase
 import com.logicalclocks.iot.kafka.ProducerServiceActor.ScheduleDatabasePoll
@@ -62,7 +61,10 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
       avroSchemas = avroSchemas + (objectId -> schema)
       logger.debug("Added schema for object {}. Currently schemas = {}", objectId, avroSchemas.size)
     case ScheduleDatabasePoll =>
-      pollingCancellable = Some(context.system.scheduler.schedule(1 second, 1 second, self, PollDatabase))
+      if (currentCerts.isEmpty || avroSchemas.isEmpty)
+        throw new IllegalStateException("Trying to run ProducerService without certificates or/and Avro schemas")
+      else
+        pollingCancellable = Some(context.system.scheduler.schedule(1 second, 1 second, self, PollDatabase))
     case UpdateCerts(certs) =>
       val (kPath, tPath) = fileWriter.saveCertsToFiles(certs).unsafeRunSync()
       currentCerts = Some(Certs(kPath, tPath, certs.password))

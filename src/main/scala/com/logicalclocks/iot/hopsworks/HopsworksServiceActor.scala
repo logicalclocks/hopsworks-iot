@@ -37,8 +37,6 @@ class HopsworksServiceActor(
 
   val hopsworksClient = HopsworksClient(hopsworksHostname, hopsworksPort, self)
 
-  val fileWriter: HopsFileWriter = HopsFileWriter()
-
   def receive: Receive = {
     case StartHopsworksServer =>
       hopsworksServer.start

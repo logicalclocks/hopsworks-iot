@@ -1,4 +1,4 @@
-package com.logicalclocks.iot.hopsworks
+package com.logicalclocks.iot.kafka
 
 import java.io.File
 import java.io.FileOutputStream
@@ -6,6 +6,7 @@ import java.io.OutputStream
 
 import cats.effect.IO
 import cats.effect.Resource
+import com.logicalclocks.iot.hopsworks.GatewayCertsDTO
 import com.typesafe.config.ConfigFactory
 import org.apache.commons.net.util.Base64
 import org.slf4j.Logger
