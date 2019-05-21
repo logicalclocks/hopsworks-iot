@@ -35,7 +35,6 @@ class HopsworksServiceActor(
   val hopsworksPort: Int = config.getInt("hopsworks.port")
 
   val hopsworksServer = HopsworksServer(host, port,
-    hopsworksHostname, hopsworksPort,
     leshanActor, self, dbActor, context)
 
   val hopsworksClient = HopsworksClient(hopsworksHostname, hopsworksPort, self)

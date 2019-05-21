@@ -3,7 +3,6 @@ package com.logicalclocks.iot.leshan
 import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Props
-import com.logicalclocks.iot.IotGateway.config
 import com.logicalclocks.iot.db.DomainDb.AddMeasurementsToDatabase
 import com.logicalclocks.iot.leshan.LeshanActor.DisconnectDevice
 import com.logicalclocks.iot.leshan.LeshanActor.GetConnectedDevices

@@ -14,8 +14,6 @@ import scala.concurrent.ExecutionContext
 case class HopsworksServer(
   host: String,
   port: Int,
-  hopsworksHostname: String,
-  hopsworksPort: Int,
   leshanActor: ActorRef,
   hopsworksServiceActor: ActorRef,
   dbActor: ActorRef,
@@ -28,8 +26,8 @@ case class HopsworksServer(
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  private val myLoggedRoute = logRequestResult(Logging.InfoLevel, route)
+  private val loggedRoute = logRequestResult(Logging.InfoLevel, route)
 
   def start =
-    Http().bindAndHandle(route, host, port)
+    Http().bindAndHandle(loggedRoute, host, port)
 }

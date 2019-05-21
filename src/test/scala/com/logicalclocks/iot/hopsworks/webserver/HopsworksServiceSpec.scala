@@ -5,8 +5,6 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.logicalclocks.iot.db.DatabaseServiceActor
 import com.logicalclocks.iot.leshan.LeshanActor
-import com.logicalclocks.iot.leshan.LeshanConfig
-import org.eclipse.leshan.LwM2m
 import org.scalatest.Matchers
 import org.scalatest.WordSpec
 
@@ -19,13 +17,8 @@ class HopsworksServiceSpec extends WordSpec
 
   val actorSystem: ActorSystem = ActorSystem("iotGateway__Test")
   val ec: ExecutionContext = actorSystem.dispatcher
-  val leshanConfig: LeshanConfig = LeshanConfig(
-    "localhost",
-    LwM2m.DEFAULT_COAP_SECURE_PORT,
-    "localhost",
-    LwM2m.DEFAULT_COAP_PORT)
   val leshanActor: ActorRef =
-    actorSystem.actorOf(LeshanActor.props(leshanConfig, null))
+    actorSystem.actorOf(LeshanActor.props(null))
   val hopsworksServiceActor: ActorRef = null
   val dbActor: ActorRef =
     actorSystem.actorOf(DatabaseServiceActor.props("h2mem1"))

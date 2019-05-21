@@ -11,8 +11,6 @@ import com.logicalclocks.iot.kafka.ProducerServiceActor
 import com.logicalclocks.iot.kafka.ProducerServiceActor.StopProducer
 import com.logicalclocks.iot.leshan.LeshanActor
 import com.logicalclocks.iot.leshan.LeshanActor.StartServer
-import com.logicalclocks.iot.leshan.LeshanConfig
-import com.typesafe.config.ConfigFactory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -22,7 +20,6 @@ import scala.concurrent.duration.Duration
 
 object IotGateway extends App {
   val logger: Logger = LoggerFactory.getLogger(getClass)
-  val config = ConfigFactory.load()
 
   val system: ActorSystem = ActorSystem("iotGateway")
 
