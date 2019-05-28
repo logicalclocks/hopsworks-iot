@@ -41,6 +41,7 @@ class LeshanActor(dbActor: ActorRef) extends Actor {
       val updated = connectedDevices + IotDevice(reg)
       logger.info(s"New device connected with endpoint ${reg.getEndpoint}.")
       logger.debug(s"Currently connected devices ${updated.size}")
+      self ! ObserveTemp(reg)
       context become active(updated)
     case ObserveTemp(reg) =>
       val _ = server.observeRequest(reg, 3303)

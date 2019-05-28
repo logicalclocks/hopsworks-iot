@@ -1,8 +1,8 @@
 package com.logicalclocks.iot.lwm2m
 
 import com.typesafe.config.ConfigFactory
+import org.eclipse.leshan.core.node.LwM2mObject
 import org.eclipse.leshan.core.node.LwM2mObjectInstance
-import org.eclipse.leshan.core.node.LwM2mResource
 import org.eclipse.leshan.core.response.ObserveResponse
 
 import scala.collection.JavaConverters._
@@ -17,34 +17,34 @@ case class ObserveResponseUnwrapper(
 
   val gatewayName: String = ConfigFactory.load().getString("gateway.name")
 
-  private val resources: Vector[LwM2mResource] = response
+  private val instances: Iterable[LwM2mObjectInstance] = response
     .getContent
-    .asInstanceOf[LwM2mObjectInstance]
-    .getResources
+    .asInstanceOf[LwM2mObject]
+    .getInstances
     .asScala
     .values
-    .toVector
 
   def getIpsoObjectList: Iterable[Measurement] =
-    response.getObservation.getPath.getObjectId.toInt match {
+    response.getContent.getId match {
       case 3303 =>
-        //        instances.flatMap(extractTempFromInstance)
-        extractTempFromInstance(resources)
+        instances.flatMap(extractTempFromInstance)
       case _ => throw new Error("Unknown ipso object")
     }
 
-  private def extractTempFromInstance(resources: Vector[LwM2mResource]): Option[Measurement] = {
-    val resourcesMap: Map[Int, AnyRef] = resources
-      .map { r => (r.getId, r.getValue) }.toMap
+  private def extractTempFromInstance(instance: LwM2mObjectInstance): Option[Measurement] = {
+    val resources: Map[Int, AnyRef] = instance
+      .getResources
+      .asScala
+      .map { case (k, v) => (k.intValue, v.getValue) }
 
     def tempIpsoObject: TempIpsoObject = TempIpsoObject(
-      resourcesMap(5700).asInstanceOf[Double],
-      resourcesMap.get(5601).map(_.asInstanceOf[Double]),
-      resourcesMap.get(5602).map(_.asInstanceOf[Double]),
-      resourcesMap.get(5603).map(_.asInstanceOf[Double]),
-      resourcesMap.get(5604).map(_.asInstanceOf[Double]),
-      resourcesMap.get(5701).map(_.asInstanceOf[String]),
-      resourcesMap.get(5605).map(_.asInstanceOf[Boolean]))
+      resources(5700).asInstanceOf[Double],
+      resources.get(5601).map(_.asInstanceOf[Double]),
+      resources.get(5602).map(_.asInstanceOf[Double]),
+      resources.get(5603).map(_.asInstanceOf[Double]),
+      resources.get(5604).map(_.asInstanceOf[Double]),
+      resources.get(5701).map(_.asInstanceOf[String]),
+      resources.get(5605).map(_.asInstanceOf[Boolean]))
 
     Try(tempIpsoObject)
       .map(TempMeasurement(timestamp, endpointClientName, 1, gatewayName, _)) match {
