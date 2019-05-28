@@ -3,3 +3,5 @@
 target/
 .idea/
 /src/main/resources/hops-kafka-ssl.conf
+/data
+Californium.properties
