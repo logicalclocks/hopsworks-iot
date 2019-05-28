@@ -59,11 +59,13 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
             kafkaProducer.foreach(_.sendIpsoObject(m._1, m._2, avroSchemas.get(m._2.objectId)))))
     case AddAvroSchema(objectId, schema) =>
       avroSchemas = avroSchemas + (objectId -> schema)
-      logger.debug("Added schema for object {}. Currently schemas = {}", objectId, avroSchemas.size)
+      logger.debug(s"Added schema for object $objectId. " +
+        s"Currently schemas = ${avroSchemas.size} out of ${LwM2mTopics.values.size} defined topics")
     case ScheduleDatabasePoll =>
-      if (currentCerts.isEmpty || avroSchemas.isEmpty)
-        throw new IllegalStateException("Trying to run ProducerService without certificates or/and Avro schemas")
-      else
+      if (currentCerts.isEmpty || avroSchemas.isEmpty) {
+        logger.info("Trying to run ProducerService without certificates or/and Avro schemas. Try again in 3 seconds")
+        context.system.scheduler.scheduleOnce(3 seconds, self, ScheduleDatabasePoll)
+      } else
         pollingCancellable = Some(context.system.scheduler.schedule(1 second, 1 second, self, PollDatabase))
     case UpdateCerts(certs) =>
       val (kPath, tPath) = fileWriter.saveCertsToFiles(certs).unsafeRunSync()
