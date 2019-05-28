@@ -18,7 +18,7 @@ case class HopsworksServer(
   hopsworksServiceActor: ActorRef,
   dbActor: ActorRef,
   ac: ActorContext)
-  extends HopsworksService with Loggable {
+  extends HopsworksService with Loggable with CorsSupport {
 
   implicit val system: ActorSystem = ac.system
   implicit val materializer: ActorMaterializer = ActorMaterializer()
@@ -29,5 +29,5 @@ case class HopsworksServer(
   private val loggedRoute = logRequestResult(Logging.InfoLevel, route)
 
   def start =
-    Http().bindAndHandle(loggedRoute, host, port)
+    Http().bindAndHandle(corsHandler(loggedRoute), host, port)
 }
