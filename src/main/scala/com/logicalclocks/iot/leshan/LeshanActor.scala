@@ -51,6 +51,7 @@ class LeshanActor(dbActor: ActorRef) extends Actor {
       val ipsoObjects: Iterable[Measurement] =
         ObserveResponseUnwrapper(timestamp, endpoint, resp)
           .getIpsoObjectList
+      logger.debug(s"Add measurement from $endpoint to database")
       dbActor ! AddMeasurementsToDatabase(ipsoObjects)
     case GetConnectedDevices =>
       sender ! connectedDevices

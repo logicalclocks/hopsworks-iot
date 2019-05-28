@@ -54,9 +54,11 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
     case PollDatabase =>
       (dbActor ? GetMeasurements)
         .mapTo[Iterable[(Int, Measurement)]]
-        .foreach(list =>
+        .foreach { list =>
+          logger.debug(s"Got list of ${list.size} measurements from the database")
           list.foreach(m =>
-            kafkaProducer.foreach(_.sendIpsoObject(m._1, m._2, avroSchemas.get(m._2.objectId)))))
+            kafkaProducer.foreach(_.sendIpsoObject(m._1, m._2, avroSchemas.get(m._2.objectId))))
+        }
     case AddAvroSchema(objectId, schema) =>
       avroSchemas = avroSchemas + (objectId -> schema)
       logger.debug(s"Added schema for object $objectId. " +
