@@ -45,7 +45,7 @@ case class HopsKafkaProducer(kStorePath: String, tStorePath: String, pass: Strin
   private val producer = new KafkaProducer[String, Array[Byte]](props)
 
   def close(): Unit =
-    producer.close()
+    producer.flush()
 
   def sendIpsoObject(dbId: Int, obj: Measurement, schemaOption: Option[Schema]) = {
     val topic: Option[String] = LwM2mTopics.findNameByObjectId(obj.objectId)
