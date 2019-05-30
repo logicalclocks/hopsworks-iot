@@ -26,7 +26,7 @@ object HopsworksJsonProtocol extends DefaultJsonProtocol {
     def read(json: JsValue): IotDevice = ???
   }
 
-  implicit val leshanConfigFormat = jsonFormat4(LeshanConfig)
+  implicit val leshanConfigFormat = jsonFormat6(LeshanConfig)
 
   implicit object IotGatewayStatusFormat extends RootJsonFormat[IotGatewayStatus] {
     def write(obj: IotGatewayStatus): JsValue =

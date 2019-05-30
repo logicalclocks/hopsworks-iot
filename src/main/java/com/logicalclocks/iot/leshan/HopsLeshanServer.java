@@ -75,8 +75,8 @@ public class HopsLeshanServer {
     private String coapHost;
     private Integer coapPort;
 
-    private String webAddress = "localhost";
-    private Integer webPort = 8082;
+    private String webAddress;
+    private Integer webPort;
 
     private LeshanServer lwServer = null;
     private ActorRef leshanActorRef;
@@ -114,6 +114,8 @@ public class HopsLeshanServer {
         this.coapsHost = config.coapsHost();
         this.coapsPort = config.coapsPort();
         this.leshanActorRef = leshanActorRef;
+        this.webAddress = config.webAddress();
+        this.webPort = config.webPort();
     }
 
     public void createAndStartServer() throws Exception {

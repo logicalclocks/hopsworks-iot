@@ -4,4 +4,6 @@ case class LeshanConfig(
   coapsHost: String,
   coapsPort: Int,
   coapHost: String,
-  coapPort: Int)
+  coapPort: Int,
+  webAddress: String,
+  webPort: Int)

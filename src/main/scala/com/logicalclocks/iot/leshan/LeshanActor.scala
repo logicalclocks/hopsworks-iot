@@ -26,7 +26,9 @@ class LeshanActor(dbActor: ActorRef) extends Actor {
     ConfigFactory.load().getString("leshan.coapsHost"),
     ConfigFactory.load().getInt("leshan.coapsPort"),
     ConfigFactory.load().getString("leshan.coapHost"),
-    ConfigFactory.load().getInt("leshan.coapPort"))
+    ConfigFactory.load().getInt("leshan.coapPort"),
+    ConfigFactory.load().getString("leshan.webAddress"),
+    ConfigFactory.load().getInt("leshan.webPort"))
 
   val server: HopsLeshanServer = new HopsLeshanServer(config, self)
 
