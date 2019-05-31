@@ -6,6 +6,7 @@ import akka.pattern.pipe
 import akka.util.Timeout
 import com.logicalclocks.iot.db.DomainDb.Add
 import com.logicalclocks.iot.db.DomainDb.BlockEndpoint
+import com.logicalclocks.iot.db.DomainDb.ClearTables
 import com.logicalclocks.iot.db.DomainDb.DeleteSingle
 import com.logicalclocks.iot.db.DomainDb.GetBatch
 import com.logicalclocks.iot.db.DomainDb.GetBlockedEndpoints
@@ -65,6 +66,9 @@ class DbOutputsActor(dbConfig: String) extends Actor {
       db.getBlockedEndpoints pipeTo sender
     case Stop =>
       context.system.scheduler.scheduleOnce(Duration.Zero)(System.exit(1))
+    case ClearTables =>
+      db.clearTables
+      context become active(Set.empty[Int])
   }
 }
 

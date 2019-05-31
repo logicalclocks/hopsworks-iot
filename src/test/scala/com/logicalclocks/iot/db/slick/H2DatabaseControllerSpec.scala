@@ -1,6 +1,7 @@
 package com.logicalclocks.iot.db.slick
 
 import com.logicalclocks.iot.lwm2m.GenericMeasurement
+import com.logicalclocks.iot.lwm2m.Measurement
 import com.logicalclocks.iot.lwm2m.TempIpsoObject
 import com.logicalclocks.iot.lwm2m.TempMeasurement
 import org.scalatest.BeforeAndAfterAll
@@ -93,6 +94,21 @@ class H2DatabaseControllerSpec extends FunSuite with Matchers with BeforeAndAfte
     val f = db.addSingleRecord(o)
     ScalaFutures.whenReady(f.failed) { e =>
       e shouldBe a[IllegalArgumentException]
+    }
+  }
+
+  test("should return empty list after asking for the same records") {
+    val f: Future[List[(Int, Measurement)]] = db.clearTables flatMap { _ =>
+      db.addSingleRecord(m1)
+    } flatMap { _ =>
+      db.addSingleRecord(m2)
+    } flatMap { _ =>
+      db.getBatchOfRecords(2, Set.empty[Int])
+    } flatMap { batch =>
+      db.getBatchOfRecords(2, batch.map(_._1).toSet)
+    }
+    ScalaFutures.whenReady(f) { batch =>
+      batch shouldBe List.empty
     }
   }
 }

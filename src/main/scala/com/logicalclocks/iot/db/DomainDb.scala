@@ -23,6 +23,7 @@ object DomainDb {
   case class DeleteSingle(id: Int) extends DbOutput
   case class BlockEndpoint(endpoint: String) extends DbOutput
   case class UnblockEndpoint(endpoint: String) extends DbOutput
+  final object ClearTables extends DbOutput
   final object GetBlockedEndpoints extends DbOutput
   final object Stop extends DbOutput
 
