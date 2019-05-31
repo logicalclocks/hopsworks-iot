@@ -50,6 +50,7 @@ class HopsworksServiceActor(
         }
         case Failure(ex) => {
           logger.error("error downloading certs: " + ex.getMessage)
+          ex.printStackTrace()
         }
       }
     case DownloadKafkaTopicSchemas(jwt, projectId) =>

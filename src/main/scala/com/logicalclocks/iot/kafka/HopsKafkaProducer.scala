@@ -31,7 +31,7 @@ case class HopsKafkaProducer(kStorePath: String, tStorePath: String, pass: Strin
 
   private val props: Properties = {
     val p = PropertiesReader()
-      .addResource("hops-kafka-producer.conf", "kafka")
+      .addResource("", "kafka")
       .props
     p.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, tStorePath)
     p.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, kStorePath)
