@@ -55,9 +55,10 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
       (dbActor ? GetMeasurements)
         .mapTo[Iterable[(Int, Measurement)]]
         .foreach { list =>
-          logger.debug(s"Got list of ${list.size} measurements from the database")
-          list.foreach(m =>
-            kafkaProducer.foreach(_.sendIpsoObject(m._1, m._2, avroSchemas.get(m._2.objectId))))
+          if (list.nonEmpty) logger.debug(s"Got list of ${list.size} measurements from the database")
+          list.foreach(m => {
+            kafkaProducer.foreach(_.sendIpsoObject(m._1, m._2, avroSchemas.get(m._2.objectId)))
+          })
         }
     case AddAvroSchema(objectId, schema) =>
       avroSchemas = avroSchemas + (objectId -> schema)
@@ -68,7 +69,7 @@ class ProducerServiceActor(dbActor: ActorRef) extends Actor {
         logger.info("Trying to run ProducerService without certificates or/and Avro schemas. Try again in 3 seconds")
         context.system.scheduler.scheduleOnce(3 seconds, self, ScheduleDatabasePoll)
       } else
-        pollingCancellable = Some(context.system.scheduler.schedule(1 second, 1 second, self, PollDatabase))
+        pollingCancellable = Some(context.system.scheduler.schedule(1 second, 10 milliseconds, self, PollDatabase))
     case UpdateCerts(certs) =>
       val (kPath, tPath) = fileWriter.saveCertsToFiles(certs).unsafeRunSync()
       currentCerts = Some(Certs(kPath, tPath, certs.password))

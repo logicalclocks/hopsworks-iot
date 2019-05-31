@@ -31,7 +31,7 @@ class DbOutputsActorSpec
 
   "A DbOutputsActor" must {
     "clear tables correctly" in {
-      val actor = system.actorOf(DbOutputsActor.props("h2mem1"))
+      val actor = system.actorOf(DbOutputsActor.props("h2mem2"))
       actor ! Add(Iterable(m1))
       expectNoMessage
       actor ! ClearTables
@@ -41,7 +41,7 @@ class DbOutputsActorSpec
     }
 
     "store records correctly" in {
-      val actor = system.actorOf(DbOutputsActor.props("h2mem1"))
+      val actor = system.actorOf(DbOutputsActor.props("h2mem2"))
       actor ! Add(Iterable(m2))
       expectNoMessage
       actor ! GetBatch(100)
@@ -50,7 +50,7 @@ class DbOutputsActorSpec
     }
 
     "return a record only once" in {
-      val actor = system.actorOf(DbOutputsActor.props("h2mem1"))
+      val actor = system.actorOf(DbOutputsActor.props("h2mem2"))
       actor ! Add(Iterable(m1))
       expectNoMessage
       actor ! GetBatch(100)
@@ -65,7 +65,7 @@ class DbOutputsActorSpec
     }
 
     "return multiple records" in {
-      val actor = system.actorOf(DbOutputsActor.props("h2mem1"))
+      val actor = system.actorOf(DbOutputsActor.props("h2mem2"))
       actor ! Add(Iterable(m1))
       expectNoMessage
       actor ! Add(Iterable(m2))

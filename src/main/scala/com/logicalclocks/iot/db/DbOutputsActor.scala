@@ -13,6 +13,7 @@ import com.logicalclocks.iot.db.DomainDb.GetBlockedEndpoints
 import com.logicalclocks.iot.db.DomainDb.Stop
 import com.logicalclocks.iot.db.DomainDb.UnblockEndpoint
 import com.logicalclocks.iot.db.slick.H2DatabaseController
+import com.logicalclocks.iot.lwm2m.Measurement
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -47,15 +48,22 @@ class DbOutputsActor(dbConfig: String) extends Actor {
       db.addBatchOfRecords(measurements.toList) foreach { res =>
       }
     case GetBatch(batchSize) =>
-      db.getBatchOfRecords(batchSize, pendingForACK) flatMap { batch =>
-        context become active(pendingForACK ++ batch.map(_._1))
-        Future(batch)
-      } pipeTo sender
+      //      db.getBatchOfRecords(batchSize, pendingForACK) flatMap { batch =>
+      //        if (pendingForACK.nonEmpty || batch.nonEmpty)
+      //          logger.debug("Pending: " + pendingForACK + ", returned: " + batch.map(_._1))
+      //        context become active(pendingForACK ++ batch.map(_._1))
+      //        Future(batch)
+      //      } pipeTo sender
+      val f = db.getBatchOfRecords(batchSize, pendingForACK)
+      val batch: List[(Int, Measurement)] = Await.result(f, Duration("5 seconds"))
+      context become active(pendingForACK ++ batch.map(_._1))
+      Future(batch) pipeTo sender
     case DeleteSingle(id) =>
       // TODO: make sure the operation is atomic - react to failures!
-      db.deleteSingleRecord(id) foreach { res =>
-        context become active(pendingForACK - id)
+      logger.debug(s"Delete single record with id $id")
+      db.deleteSingleRecord(id) foreach { _ =>
       }
+      context become active(pendingForACK - id)
     case BlockEndpoint(endpoint) =>
       db.addBlockedEndpoint(endpoint) foreach (_ =>
         logger.debug(s"Block endpoint $endpoint"))

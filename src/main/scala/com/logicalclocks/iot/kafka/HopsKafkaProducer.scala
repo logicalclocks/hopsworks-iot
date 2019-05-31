@@ -57,7 +57,7 @@ case class HopsKafkaProducer(kStorePath: String, tStorePath: String, pass: Strin
         .map(new ProducerRecord[String, Array[Byte]](topic.get, obj.endpointClientName, _)) match {
           case Success(s) => producer.send(s, (_: RecordMetadata, ex: Exception) => {
             if (ex == null) {
-              logger.debug(s"Received Kafka ACK for measurement ${obj.endpointClientName}")
+              logger.debug(s"Received Kafka ACK for measurement $dbId")
               dbActor ! DeleteSingleRecord(dbId)
             } else {
               logger.error(s"Exception sending $dbId from Kafka: $ex")
