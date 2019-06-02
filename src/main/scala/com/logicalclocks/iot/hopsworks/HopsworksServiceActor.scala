@@ -43,10 +43,10 @@ class HopsworksServiceActor(
     case StartHopsworksServer =>
       hopsworksServer.start
     case DownloadGatewayCertificates(jwt, adminPassword, projectId) =>
-      hopsworksClient.downloadCerts(jwt, adminPassword, projectId) onComplete {
+      hopsworksClient.downloadCerts("Bearer " + jwt, adminPassword, projectId) onComplete {
         case Success(res) => {
           producerServiceActor ! UpdateCerts(res)
-          self ! DownloadKafkaTopicSchemas(jwt, projectId)
+          self ! DownloadKafkaTopicSchemas("Bearer " + jwt, projectId)
         }
         case Failure(ex) => {
           logger.error("error downloading certs: " + ex.getMessage)
