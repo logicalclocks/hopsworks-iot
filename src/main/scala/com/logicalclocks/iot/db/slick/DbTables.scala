@@ -21,7 +21,7 @@ object DbTables {
     timestamp: Long,
     endpointClientName: String,
     instanceId: Int,
-    gatewayId: Int,
+    gatewayName: String,
     objectId: Int)
 
   class MeasurementsTable(tag: Tag) extends Table[MeasurementRow](tag, "MEASUREMENTS") {
@@ -33,12 +33,12 @@ object DbTables {
 
     def instanceId = column[Int]("INSTANCE_ID")
 
-    def gatewayId = column[Int]("GATEWAY_ID")
+    def gatewayName = column[String]("GATEWAY_NAME")
 
     def objectId = column[Int]("OBJECT_ID")
 
     def * =
-      (id, timestamp, endpointClientName, instanceId, gatewayId, objectId) <> (
+      (id, timestamp, endpointClientName, instanceId, gatewayName, objectId) <> (
         (MeasurementRow.apply _).tupled,
         MeasurementRow.unapply _)
 

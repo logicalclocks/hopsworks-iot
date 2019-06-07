@@ -5,7 +5,7 @@
         {"name":"timestamp","type":"long"},
         {"name":"endpointClientName","type":"string"},
         {"name":"instanceId","type":"int"},
-        {"name":"gatewayId","type":"int"},
+        {"name":"gatewayName","type":"string"},
         {"name":"ipsoObject","type":{"type":"record","name":"TempIpsoObject","fields":[
             {"name":"sensorValue","type":"double"},
             {"name":"minMeasuredValue","type":["null","double"]},

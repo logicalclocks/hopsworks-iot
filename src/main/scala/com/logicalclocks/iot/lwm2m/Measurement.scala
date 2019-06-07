@@ -7,7 +7,7 @@ sealed trait Measurement {
   def endpointClientName: String
   def objectId: Int
   def instanceId: Int
-  def gatewayId: Int
+  def gatewayName: String
   def ipsoObject: IpsoObject
 }
 
@@ -16,7 +16,7 @@ case class TempMeasurement(
   timestamp: Long,
   endpointClientName: String,
   instanceId: Int,
-  gatewayId: Int,
+  gatewayName: String,
   ipsoObject: TempIpsoObject) extends Measurement {
   override val objectId: Int = 3303
 }
@@ -26,7 +26,7 @@ case class PresenceMeasurement(
   timestamp: Long,
   endpointClientName: String,
   instanceId: Int,
-  gatewayId: Int,
+  gatewayName: String,
   ipsoObject: PresenceIpsoObject) extends Measurement {
   override val objectId: Int = 3302
 }
@@ -36,7 +36,7 @@ case class GenericMeasurement(
   timestamp: Long,
   endpointClientName: String,
   instanceId: Int,
-  gatewayId: Int,
+  gatewayName: String,
   objectId: Int,
   ipsoObject: IpsoObject) extends Measurement
 

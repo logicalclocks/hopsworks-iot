@@ -5,7 +5,7 @@
         {"name":"timestamp","type":"long"},
         {"name":"endpointClientName","type":"string"},
         {"name":"instanceId","type":"int"},
-        {"name":"gatewayId","type":"int"},
+        {"name":"gatewayName","type":"string"},
         {"name":"ipsoObject","type":{"type":"record","name":"PresenceIpsoObject","fields":[
             {"name":"digitalInputState","type":"boolean"},
             {"name":"digitalInputCounter","type":["null","int"]},

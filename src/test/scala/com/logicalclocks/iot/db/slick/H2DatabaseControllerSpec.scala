@@ -21,8 +21,8 @@ class H2DatabaseControllerSpec extends FunSuite with Matchers with BeforeAndAfte
   val t1 = TempIpsoObject(1.1, Some(1.0), Some(2.0), None, None, Some("cel"), None)
   val t2 = TempIpsoObject(2.1, Some(1.0), Some(10.0), None, None, Some("cel"), None)
 
-  val m1 = TempMeasurement(111L, "kimchi", 1, 11000, t1)
-  val m2 = TempMeasurement(112L, "kimchi", 1, 11000, t2)
+  val m1 = TempMeasurement(111L, "kimchi", 1, "gateway_1", t1)
+  val m2 = TempMeasurement(112L, "kimchi", 1, "gateway_1", t2)
 
   override protected def beforeAll(): Unit = {
     val f = db.start
@@ -90,7 +90,7 @@ class H2DatabaseControllerSpec extends FunSuite with Matchers with BeforeAndAfte
   }
 
   test("adding an unknown object throws IllegalArgumentException") {
-    val o = GenericMeasurement(0L, "", 0, 0, 0, t1)
+    val o = GenericMeasurement(0L, "", 0, "", 0, t1)
     val f = db.addSingleRecord(o)
     ScalaFutures.whenReady(f.failed) { e =>
       e shouldBe a[IllegalArgumentException]

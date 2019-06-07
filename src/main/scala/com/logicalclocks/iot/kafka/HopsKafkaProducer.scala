@@ -81,7 +81,7 @@ case class HopsKafkaProducer(kStorePath: String, tStorePath: String, pass: Strin
     record.put("timestamp", measurement.timestamp)
     record.put("endpointClientName", measurement.endpointClientName)
     record.put("instanceId", measurement.instanceId)
-    record.put("gatewayId", measurement.gatewayId)
+    record.put("gatewayName", measurement.gatewayName)
     val ipsoObject = new GenericData.Record(schema.getField("ipsoObject").schema)
     ipsoObject.put("sensorValue", measurement.ipsoObject.sensorValue)
     measurement.ipsoObject.minMeasuredValue.foreach(ipsoObject.put("minMeasuredValue", _))

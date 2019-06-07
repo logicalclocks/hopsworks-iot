@@ -15,7 +15,7 @@ case class ObserveResponseUnwrapper(
   endpointClientName: String,
   response: ObserveResponse) {
 
-  val gatewayId: Int = ConfigFactory.load().getInt("gateway.id")
+  val gatewayName: String = ConfigFactory.load().getString("gateway.name")
 
   private val resources: Vector[LwM2mResource] = response
     .getContent
@@ -47,7 +47,7 @@ case class ObserveResponseUnwrapper(
       resourcesMap.get(5605).map(_.asInstanceOf[Boolean]))
 
     Try(tempIpsoObject)
-      .map(TempMeasurement(timestamp, endpointClientName, 1, gatewayId, _)) match {
+      .map(TempMeasurement(timestamp, endpointClientName, 1, gatewayName, _)) match {
         case Success(x) => Some(x)
         case _ => None
       }

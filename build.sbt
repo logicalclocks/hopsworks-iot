@@ -22,6 +22,8 @@ fork in run := true
 
 testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v", "-s", "-a")
 
+test in assembly := {}
+
 lazy val akkaVersion = "2.5.21"
 lazy val akkaHttpVersion = "10.1.8"
 lazy val avro4sVersion = "2.0.4"

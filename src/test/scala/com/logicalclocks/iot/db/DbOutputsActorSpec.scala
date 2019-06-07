@@ -26,8 +26,8 @@ class DbOutputsActorSpec
   val t1 = TempIpsoObject(1.1, Some(1.0), Some(2.0), None, None, Some("cel"), None)
   val t2 = TempIpsoObject(2.1, Some(1.0), Some(10.0), None, None, Some("cel"), None)
 
-  val m1 = TempMeasurement(111L, "kimchi", 1, 11000, t1)
-  val m2 = TempMeasurement(112L, "kimchi", 1, 11000, t2)
+  val m1 = TempMeasurement(111L, "kimchi", 1, "gateway_1", t1)
+  val m2 = TempMeasurement(112L, "kimchi", 1, "gateway_1", t2)
 
   "A DbOutputsActor" must {
     "clear tables correctly" in {

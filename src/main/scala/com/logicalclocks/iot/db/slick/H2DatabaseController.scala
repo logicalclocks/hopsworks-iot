@@ -112,7 +112,7 @@ case class H2DatabaseController(path: String) extends HopsDbController {
   private def addMeasurement(obj: Measurement): Future[Int] = {
     val insertMeasurementQuery = measurementsTQ returning measurementsTQ.map(_.id) into ((row, id) => row.copy(id = id))
     val action = insertMeasurementQuery += MeasurementRow(0, obj.timestamp, obj.endpointClientName,
-      obj.instanceId, obj.gatewayId, obj.objectId)
+      obj.instanceId, obj.gatewayName, obj.objectId)
     db.run(action) map (res => res.id)
   }
 
@@ -144,7 +144,7 @@ case class H2DatabaseController(path: String) extends HopsDbController {
     m.objectId match {
       case 3303 => {
         val t = i.asInstanceOf[TempIpsoObjectRow]
-        TempMeasurement(m.timestamp, m.endpointClientName, m.instanceId, m.gatewayId, TempIpsoObject(
+        TempMeasurement(m.timestamp, m.endpointClientName, m.instanceId, m.gatewayName, TempIpsoObject(
           t.sensorValue, t.minMeasuredValue, t.maxMeasuredValue, t.minRangeValue, t.maxRangeValue, t.sensorUnits, t.resetMinAndMaxMeasuredValues))
       }
     }

@@ -42,10 +42,16 @@ case class HopsworksClient(hopsworksHostname: String, hopsworksPort: Int, hopswo
   }
 
   def downloadCerts(jwt: String, adminPassword: String, projectId: Int): Future[GatewayCertsDTO] = {
+    val token: String = if (jwt.startsWith("Bearer")) {
+      jwt
+    } else {
+      "Bearer " + jwt
+    }
+
     val request: HttpRequest = HttpRequest(
       method = HttpMethods.POST,
       uri = "https://" + hopsworksHostname + ":" + hopsworksPort + "/hopsworks-api/api/project/" + projectId + "/downloadGatewayCert")
-      .withHeaders(RawHeader("Authorization", jwt))
+      .withHeaders(RawHeader("Authorization", token))
       .withEntity(ContentTypes.APPLICATION_X_WWW_FORM_URLENCODED, "password=" + adminPassword)
 
     executeSingleRequest(request) flatMap { response =>
